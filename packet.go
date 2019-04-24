@@ -44,6 +44,22 @@ func (p VersionPacket) GetHeader() PacketHeader {
 	return p.PacketHeader
 }
 
+func (p ExitPacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p ExitPacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p ErrorPacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p ErrorPacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
 func (p *PacketHeader) GetBytes() []byte {
 	bytes := []byte{}
 
@@ -89,7 +105,7 @@ func ReadPacketHeader(client net.Conn) (PacketHeader, error) {
 	header.Sequence = binary.LittleEndian.Uint16(sequence)
 	header.Type = binary.LittleEndian.Uint16(packetType)
 	header.Length = binary.LittleEndian.Uint16(length)
-	fmt.Println(header)
+
 	return header, nil
 }
 
@@ -160,6 +176,24 @@ func ParsePacket(header PacketHeader, payload []byte) (Packet, error) {
 		}
 
 		return packet, nil
+
+	case PacketTypeExit:
+		packet, e := RenderExitPacket(payload)
+
+		if e != nil {
+			return packet, e
+		}
+
+		return packet, nil
+
+	case PacketTypeError:
+		packet, e := RenderErrorPacket(payload)
+
+		if e != nil {
+			return packet, e
+		}
+
+		return packet, nil
 	}
 
 	return packet, nil
@@ -179,6 +213,18 @@ func RenderVersionPacket(payload []byte) (VersionPacket, error) {
 
 func RenderExitPacket(payload []byte) (ExitPacket, error) {
 	packet := ExitPacket{}
+
+	e := json.Unmarshal(payload, &packet)
+
+	if e != nil {
+		return packet, e
+	}
+
+	return packet, nil
+}
+
+func RenderErrorPacket(payload []byte) (ErrorPacket, error) {
+	packet := ErrorPacket{}
 
 	e := json.Unmarshal(payload, &packet)
 
