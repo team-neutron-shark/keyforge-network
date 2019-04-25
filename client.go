@@ -4,6 +4,7 @@ import "net"
 
 type Client struct {
 	Connection net.Conn
+	Connected  bool
 	Sequence   uint16
 }
 
@@ -19,6 +20,8 @@ func (c *Client) Connect(address string) error {
 	if e != nil {
 		return e
 	}
+
+	c.Connected = true
 
 	return nil
 }

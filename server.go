@@ -1,30 +1,41 @@
 package kfnetwork
 
 import (
+	"errors"
 	"fmt"
 	keyforge "keyforge/game"
 	"net"
 	"sync"
 )
 
+const PlayerLimit = 2
+
 // PlayerClient - This type holds both the keyforge player type along with
 // the net.Conn object required for networked communication.
 type PlayerClient struct {
-	Client net.Conn
+	Client    net.Conn
+	Connected bool
 	keyforge.Player
+}
+
+type SpectatorClient struct {
+	Client net.Conn
+	Name   string
 }
 
 // Server - This type represent our server at a high level
 type Server struct {
-	Debug         bool
-	TestString    string
-	LogQueue      chan string
-	PacketQueue   chan Packet
-	Listener      net.Listener
-	ListenerMutex sync.Mutex
-	Clients       []PlayerClient
-	ClientMutex   sync.Mutex
-	Running       bool
+	Debug          bool
+	TestString     string
+	LogQueue       chan string
+	PacketQueue    chan Packet
+	Listener       net.Listener
+	ListenerMutex  sync.Mutex
+	Players        []PlayerClient
+	PlayerMutex    sync.Mutex
+	Spectators     []SpectatorClient
+	SpectatorMutex sync.Mutex
+	Running        bool
 }
 
 // NewServer - Return a pointer to a newly created server
@@ -74,12 +85,15 @@ func (s *Server) ListenLoop(address string) {
 		if e != nil {
 			client.Close()
 		} else {
+			// Handle incoming connection.
 			if s.Debug {
 				logEntry := fmt.Sprintf("Client connection accepted from remote address %s.", client.RemoteAddr())
 				s.Log(logEntry)
 			}
 
 			// Handle accepted client
+			s.ReceiveVersionPacket(client)
+			s.ReceiveLoginPacket(client)
 			go s.ReadLoop(client)
 		}
 	}
@@ -100,8 +114,8 @@ func (s *Server) Accept() (net.Conn, error) {
 
 // HandleConnection - Process incoming connections after being accepted.
 func (s *Server) HandleConnection(client net.Conn) {
-	s.ClientMutex.Lock()
-	defer s.ClientMutex.Unlock()
+	//s.ClientMutex.Lock()
+	//defer s.ClientMutex.Unlock()
 
 }
 
@@ -145,12 +159,12 @@ func (s *Server) ReadLoop(client net.Conn) {
 			s.CloseConnection(client)
 			return
 		}
-		fmt.Println(packet)
+
 		if s.Debug {
-			payload, _ := packet.GetPayload()
-			logEntry := fmt.Sprintf("packet received from client %s!\nPayload: %s", client.RemoteAddr(), string(payload))
+			logEntry := fmt.Sprintf("Packet received from client %s.", client.RemoteAddr())
 			s.Log(logEntry)
 		}
+
 		s.HandlePacket(client, packet)
 	}
 }
@@ -160,6 +174,16 @@ func (s *Server) CloseConnection(client net.Conn) {
 		logMessage := fmt.Sprintf("Closing remote connection for %s.", client.RemoteAddr())
 		s.Log(logMessage)
 	}
+
+	// Mark player as disconnected. This avoids reading from the client in
+	// the main read loop.
+	player, e := s.FindPlayerByConnection(client)
+
+	if e == nil {
+		player.Connected = false
+	}
+
+	// Close the connection.
 	client.Close()
 }
 
@@ -172,10 +196,24 @@ func (s *Server) SendErrorPacket(client net.Conn, message string) error {
 	return e
 }
 
+func (s *Server) FindPlayerByConnection(client net.Conn) (PlayerClient, error) {
+	playerClient := PlayerClient{}
+
+	for _, player := range s.Players {
+		if client == player.Client {
+			return player, nil
+		}
+	}
+
+	return playerClient, errors.New("no player found")
+}
+
 func (s *Server) HandlePacket(client net.Conn, packet Packet) {
 	switch packet.GetHeader().Type {
 	case PacketTypeVersion:
 		s.HandleVersionPacket(client, packet.(VersionPacket))
+	case PacketTypeLogin:
+		s.HandleLoginPacket(client, packet.(LoginPacket))
 	}
 }
 
@@ -190,4 +228,72 @@ func (s *Server) HandleVersionPacket(client net.Conn, packet VersionPacket) {
 		s.SendErrorPacket(client, "Protocol version mismatch.")
 		s.CloseConnection(client)
 	}
+}
+
+func (s *Server) HandleLoginPacket(client net.Conn, packet LoginPacket) {
+	if len(s.Players) < 2 {
+		s.PlayerMutex.Lock()
+		defer s.PlayerMutex.Unlock()
+
+		player := PlayerClient{}
+		player.Name = packet.Name
+		s.Players = append(s.Players, player)
+
+		if s.Debug {
+			logEntry := fmt.Sprintf("Player %s has joined the game.", player.Name)
+			s.Log(logEntry)
+		}
+	} else {
+		s.SpectatorMutex.Lock()
+		defer s.SpectatorMutex.Unlock()
+
+		spectator := SpectatorClient{}
+		spectator.Name = packet.Name
+		s.Spectators = append(s.Spectators, spectator)
+
+		if s.Debug {
+			logEntry := fmt.Sprintf("Spectator %s has joined the game.")
+			s.Log(logEntry)
+		}
+	}
+}
+
+func (s *Server) ReceiveLoginPacket(client net.Conn) error {
+	packet, e := ReadPacket(client)
+
+	if e != nil {
+		return e
+	}
+
+	if packet.GetHeader().Type != PacketTypeLogin {
+		logEntry := fmt.Sprintf("Expected login packet from %s; received packet of a different type.", client.RemoteAddr())
+		s.Log(logEntry)
+
+		s.SendErrorPacket(client, "No login packet received.")
+		s.CloseConnection(client)
+	}
+
+	s.HandlePacket(client, packet)
+
+	return nil
+}
+
+func (s *Server) ReceiveVersionPacket(client net.Conn) error {
+	packet, e := ReadPacket(client)
+
+	if e != nil {
+		return e
+	}
+
+	if packet.GetHeader().Type != PacketTypeVersion {
+		logEntry := fmt.Sprintf("Expected version packet from %s; received packet of a different type.", client.RemoteAddr())
+		s.Log(logEntry)
+
+		s.SendErrorPacket(client, "No version packet received.")
+		s.CloseConnection(client)
+	}
+
+	s.HandlePacket(client, packet)
+
+	return nil
 }
