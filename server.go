@@ -1,4 +1,4 @@
-package server
+package kfnetwork
 
 import (
 	"fmt"
@@ -151,6 +151,7 @@ func (s *Server) ReadLoop(client net.Conn) {
 			logEntry := fmt.Sprintf("packet received from client %s!\nPayload: %s", client.RemoteAddr(), string(payload))
 			s.Log(logEntry)
 		}
+		s.HandlePacket(client, packet)
 	}
 }
 
@@ -160,4 +161,33 @@ func (s *Server) CloseConnection(client net.Conn) {
 		s.Log(logMessage)
 	}
 	client.Close()
+}
+
+func (s *Server) SendErrorPacket(client net.Conn, message string) error {
+	packet := ErrorPacket{}
+	packet.Sequence = 0
+	packet.Message = message
+
+	e := WritePacket(client, packet)
+	return e
+}
+
+func (s *Server) HandlePacket(client net.Conn, packet Packet) {
+	switch packet.GetHeader().Type {
+	case PacketTypeVersion:
+		s.HandleVersionPacket(client, packet.(VersionPacket))
+	}
+}
+
+func (s *Server) HandleVersionPacket(client net.Conn, packet VersionPacket) {
+	debugString := fmt.Sprintf("HandleVersionPacket: %+v", packet)
+	s.Log(debugString)
+	if packet.Version != ProtocolVersion {
+		if s.Debug {
+			logEntry := fmt.Sprintf("Client %s sent a version packet with a mismatching version.", client.RemoteAddr())
+			s.Log(logEntry)
+		}
+		s.SendErrorPacket(client, "Protocol version mismatch.")
+		s.CloseConnection(client)
+	}
 }

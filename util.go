@@ -1,4 +1,4 @@
-package server
+package kfnetwork
 
 import (
 	"math/rand"

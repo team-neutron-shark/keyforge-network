@@ -1,9 +1,9 @@
 package main
 
-import "server"
+import kfnetwork "keyforge-network"
 
 func main() {
-	s := server.NewServer(":8888")
+	s := kfnetwork.NewServer(":8888")
 
 	for s.Running {
 		s.PrintLogs()

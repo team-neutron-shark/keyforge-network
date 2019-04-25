@@ -1,4 +1,4 @@
-package server
+package kfnetwork
 
 import (
 	"encoding/binary"
@@ -36,6 +36,12 @@ type ErrorPacket struct {
 	Message string
 }
 
+type LoginPacket struct {
+	CommonPacket
+	Name string
+	ID   string
+}
+
 func (p VersionPacket) GetPayload() ([]byte, error) {
 	return json.Marshal(p)
 }
@@ -57,6 +63,14 @@ func (p ErrorPacket) GetPayload() ([]byte, error) {
 }
 
 func (p ErrorPacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p LoginPacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p LoginPacket) GetHeader() PacketHeader {
 	return p.PacketHeader
 }
 
@@ -169,31 +183,13 @@ func ParsePacket(header PacketHeader, payload []byte) (Packet, error) {
 
 	switch header.Type {
 	case PacketTypeVersion:
-		packet, e := RenderVersionPacket(payload)
-
-		if e != nil {
-			return packet, e
-		}
-
-		return packet, nil
-
+		return RenderVersionPacket(payload)
 	case PacketTypeExit:
-		packet, e := RenderExitPacket(payload)
-
-		if e != nil {
-			return packet, e
-		}
-
-		return packet, nil
-
+		return RenderExitPacket(payload)
 	case PacketTypeError:
-		packet, e := RenderErrorPacket(payload)
-
-		if e != nil {
-			return packet, e
-		}
-
-		return packet, nil
+		return RenderErrorPacket(payload)
+	case PacketTypeLogin:
+		return RenderLoginPacket(payload)
 	}
 
 	return packet, nil
@@ -225,6 +221,18 @@ func RenderExitPacket(payload []byte) (ExitPacket, error) {
 
 func RenderErrorPacket(payload []byte) (ErrorPacket, error) {
 	packet := ErrorPacket{}
+
+	e := json.Unmarshal(payload, &packet)
+
+	if e != nil {
+		return packet, e
+	}
+
+	return packet, nil
+}
+
+func RenderLoginPacket(payload []byte) (LoginPacket, error) {
+	packet := LoginPacket{}
 
 	e := json.Unmarshal(payload, &packet)
 
