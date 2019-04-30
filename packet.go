@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net"
 )
 
@@ -86,15 +85,12 @@ func (p UpdateGameStatePacket) GetHeader() PacketHeader {
 func (p *PacketHeader) GetBytes() []byte {
 	bytes := []byte{}
 
-	//sequence := make([]byte, 2)
 	packetType := make([]byte, 2)
 	length := make([]byte, 2)
 
-	//binary.LittleEndian.PutUint16(sequence, p.Sequence)
 	binary.LittleEndian.PutUint16(packetType, p.Type)
 	binary.LittleEndian.PutUint16(length, p.Length)
 
-	//bytes = append(bytes, sequence...)
 	bytes = append(bytes, packetType...)
 	bytes = append(bytes, length...)
 
@@ -103,15 +99,8 @@ func (p *PacketHeader) GetBytes() []byte {
 
 func ReadPacketHeader(client net.Conn) (PacketHeader, error) {
 	header := PacketHeader{}
-	//sequence := make([]byte, 2)
 	packetType := make([]byte, 2)
 	length := make([]byte, 2)
-
-	//_, e := client.Read(sequence)
-
-	//if e != nil {
-	//	return header, e
-	//}
 
 	_, e := client.Read(packetType)
 
@@ -125,7 +114,6 @@ func ReadPacketHeader(client net.Conn) (PacketHeader, error) {
 		return header, e
 	}
 
-	//header.Sequence = binary.LittleEndian.Uint16(sequence)
 	header.Type = binary.LittleEndian.Uint16(packetType)
 	header.Length = binary.LittleEndian.Uint16(length)
 
