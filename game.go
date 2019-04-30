@@ -30,11 +30,13 @@ func NewGame() *Game {
 func (g *Game) AdvanceTurn() {
 	if g.Turn == 0 {
 		g.Turn = 1
+		return
+	}
+
+	if g.Turn > len(g.Players) {
+		g.Turn = 1
+		return
 	}
 
 	g.Turn++
-
-	if turn > len(g.Players) {
-		g.
-	}
 }

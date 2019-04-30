@@ -9,6 +9,7 @@ const (
 	PacketTypeError
 	PacketTypeVersion
 	PacketTypeLogin
+	PacketTypeUpdateGameState
 	PacketTypeSendDeck
 	PacketTypeSendCard
 	PacketTypePlayCard

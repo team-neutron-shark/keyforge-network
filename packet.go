@@ -16,30 +16,31 @@ type Packet interface {
 type PacketHeader struct {
 	Sequence uint16
 	Type     uint16
-	Length   uint16
+	Length   uint16 `json:"-"`
 }
 
-type CommonPacket struct {
-	PacketHeader
-}
 type VersionPacket struct {
-	CommonPacket
+	PacketHeader
 	Version float32
 }
 
 type ExitPacket struct {
-	CommonPacket
+	PacketHeader
 }
 
 type ErrorPacket struct {
-	CommonPacket
+	PacketHeader
 	Message string
 }
 
 type LoginPacket struct {
-	CommonPacket
+	PacketHeader
 	Name string
 	ID   string
+}
+
+type UpdateGameStatePacket struct {
+	PacketHeader
 }
 
 func (p VersionPacket) GetPayload() ([]byte, error) {
@@ -74,18 +75,26 @@ func (p LoginPacket) GetHeader() PacketHeader {
 	return p.PacketHeader
 }
 
+func (p UpdateGameStatePacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p UpdateGameStatePacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
 func (p *PacketHeader) GetBytes() []byte {
 	bytes := []byte{}
 
-	sequence := make([]byte, 2)
+	//sequence := make([]byte, 2)
 	packetType := make([]byte, 2)
 	length := make([]byte, 2)
 
-	binary.LittleEndian.PutUint16(sequence, p.Sequence)
+	//binary.LittleEndian.PutUint16(sequence, p.Sequence)
 	binary.LittleEndian.PutUint16(packetType, p.Type)
 	binary.LittleEndian.PutUint16(length, p.Length)
 
-	bytes = append(bytes, sequence...)
+	//bytes = append(bytes, sequence...)
 	bytes = append(bytes, packetType...)
 	bytes = append(bytes, length...)
 
@@ -94,17 +103,17 @@ func (p *PacketHeader) GetBytes() []byte {
 
 func ReadPacketHeader(client net.Conn) (PacketHeader, error) {
 	header := PacketHeader{}
-	sequence := make([]byte, 2)
+	//sequence := make([]byte, 2)
 	packetType := make([]byte, 2)
 	length := make([]byte, 2)
 
-	_, e := client.Read(sequence)
+	//_, e := client.Read(sequence)
 
-	if e != nil {
-		return header, e
-	}
+	//if e != nil {
+	//	return header, e
+	//}
 
-	_, e = client.Read(packetType)
+	_, e := client.Read(packetType)
 
 	if e != nil {
 		return header, e
@@ -116,7 +125,7 @@ func ReadPacketHeader(client net.Conn) (PacketHeader, error) {
 		return header, e
 	}
 
-	header.Sequence = binary.LittleEndian.Uint16(sequence)
+	//header.Sequence = binary.LittleEndian.Uint16(sequence)
 	header.Type = binary.LittleEndian.Uint16(packetType)
 	header.Length = binary.LittleEndian.Uint16(length)
 
@@ -128,7 +137,6 @@ func ReadPacket(client net.Conn) (Packet, error) {
 
 	header, e := ReadPacketHeader(client)
 
-	fmt.Println("Length:", header.Length)
 	if e != nil {
 		return packet, e
 	}
@@ -179,66 +187,36 @@ func WritePacket(client net.Conn, packet Packet) error {
 }
 
 func ParsePacket(header PacketHeader, payload []byte) (Packet, error) {
+	packet, e := RenderPacket(header, payload)
+
+	if e != nil {
+		return packet, e
+	}
+
+	return packet, nil
+}
+
+func RenderPacket(header PacketHeader, payload []byte) (Packet, error) {
 	var packet Packet
 
 	switch header.Type {
-	case PacketTypeVersion:
-		return RenderVersionPacket(payload)
 	case PacketTypeExit:
-		return RenderExitPacket(payload)
+		packet := ExitPacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
 	case PacketTypeError:
-		return RenderErrorPacket(payload)
-	case PacketTypeLogin:
-		return RenderLoginPacket(payload)
-	}
-
-	return packet, nil
-}
-
-func RenderVersionPacket(payload []byte) (VersionPacket, error) {
-	packet := VersionPacket{}
-
-	e := json.Unmarshal(payload, &packet)
-
-	if e != nil {
+		packet := ErrorPacket{}
+		e := json.Unmarshal(payload, &packet)
 		return packet, e
-	}
-
-	return packet, nil
-}
-
-func RenderExitPacket(payload []byte) (ExitPacket, error) {
-	packet := ExitPacket{}
-
-	e := json.Unmarshal(payload, &packet)
-
-	if e != nil {
+	case PacketTypeVersion:
+		packet := VersionPacket{}
+		e := json.Unmarshal(payload, &packet)
 		return packet, e
-	}
-
-	return packet, nil
-}
-
-func RenderErrorPacket(payload []byte) (ErrorPacket, error) {
-	packet := ErrorPacket{}
-
-	e := json.Unmarshal(payload, &packet)
-
-	if e != nil {
+	case PacketTypeUpdateGameState:
+		packet := UpdateGameStatePacket{}
+		e := json.Unmarshal(payload, &packet)
 		return packet, e
+	default:
+		return packet, errors.New("unknown packet type")
 	}
-
-	return packet, nil
-}
-
-func RenderLoginPacket(payload []byte) (LoginPacket, error) {
-	packet := LoginPacket{}
-
-	e := json.Unmarshal(payload, &packet)
-
-	if e != nil {
-		return packet, e
-	}
-
-	return packet, nil
 }
