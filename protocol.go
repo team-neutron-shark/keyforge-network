@@ -10,5 +10,6 @@ const (
 	PacketTypeVersion
 	PacketTypeLogin
 	PacketTypeSendDeck
-	PacketTypeSendCardd
+	PacketTypeSendCard
+	PacketTypePlayCard
 )

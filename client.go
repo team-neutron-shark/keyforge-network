@@ -55,5 +55,6 @@ func (c *Client) SendLogin() error {
 	packet.ID = GenerateUUID()
 
 	e := WritePacket(c.Connection, packet)
+	c.Sequence++
 	return e
 }
