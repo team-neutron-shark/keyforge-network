@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net"
 )
 
@@ -127,6 +128,7 @@ func ReadPacket(client net.Conn) (Packet, error) {
 
 	header, e := ReadPacketHeader(client)
 
+	fmt.Println("Length:", header.Length)
 	if e != nil {
 		return packet, e
 	}
