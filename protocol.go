@@ -4,13 +4,29 @@ package kfnetwork
 // support for new features that old clients won't support.
 const ProtocolVersion = 0.01
 
+type PacketType uint16
+
 const (
-	PacketTypeExit = iota
+	PacketTypeExit uint16 = iota
 	PacketTypeError
-	PacketTypeVersion
+	PacketTypeVersionRequest
+	PacketTypeVersionResponse
 	PacketTypeLogin
 	PacketTypeUpdateGameState
-	PacketTypeSendDeck
-	PacketTypeSendCard
-	PacketTypePlayCard
+	PacketTypeCardPileRequest
+	PacketTypeCardPileResponse
+	PacketTypeDrawCardRequest
+	PacketTypeDrawCardResponse
+	PacketTypePlayCardRequest
+	PacketTypePlayCardResponse
+	PacketTypeDiscardCard
+)
+
+type PileType uint8
+
+const (
+	CardPileDiscard uint8 = iota
+	CardPileArchive
+	CardPileHand
+	CardPileDraw
 )

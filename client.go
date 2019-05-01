@@ -1,6 +1,8 @@
 package kfnetwork
 
-import "net"
+import (
+	"net"
+)
 
 type Client struct {
 	Connection net.Conn
@@ -23,10 +25,10 @@ func (c *Client) Connect(address string) error {
 	return nil
 }
 
-func (c *Client) SendVersion() error {
+func (c *Client) SendVersionRequest() error {
 	packet := VersionPacket{}
 	packet.Sequence = c.Sequence
-	packet.Type = PacketTypeVersion
+	packet.Type = PacketTypeVersionRequest
 	packet.Version = ProtocolVersion
 
 	e := WritePacket(c.Connection, packet)
@@ -34,7 +36,7 @@ func (c *Client) SendVersion() error {
 	return e
 }
 
-func (c *Client) SendExit() error {
+func (c *Client) SendExitRequest() error {
 	packet := ExitPacket{}
 	packet.Sequence = c.Sequence
 	packet.Type = PacketTypeExit
@@ -44,7 +46,7 @@ func (c *Client) SendExit() error {
 	return e
 }
 
-func (c *Client) SendLogin() error {
+func (c *Client) SendLoginRequest() error {
 	packet := LoginPacket{}
 	packet.Sequence = c.Sequence
 	packet.Type = PacketTypeLogin
@@ -54,4 +56,19 @@ func (c *Client) SendLogin() error {
 	e := WritePacket(c.Connection, packet)
 	c.Sequence++
 	return e
+}
+
+func (c *Client) SendGetCardPile(pile uint8) error {
+	packet := CardPileRequestPacket{}
+	packet.Sequence = c.Sequence
+	packet.Type = PacketTypeCardPileRequest
+	packet.Pile = pile
+
+	e := WritePacket(c.Connection, packet)
+	c.Sequence++
+	return e
+}
+
+func (c *Client) SendGetArchivePile() {
+	c.SendGetCardPile(CardPileArchive)
 }

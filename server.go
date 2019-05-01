@@ -174,7 +174,7 @@ func (s *Server) SendErrorPacket(client net.Conn, message string) error {
 
 func (s *Server) HandlePacket(client net.Conn, packet Packet) {
 	switch packet.GetHeader().Type {
-	case PacketTypeVersion:
+	case PacketTypeVersionRequest:
 		s.HandleVersionPacket(client, packet.(VersionPacket))
 	}
 }

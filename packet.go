@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
+	keyforge "keyforge/game"
 	"net"
 )
 
@@ -40,6 +41,38 @@ type LoginPacket struct {
 
 type UpdateGameStatePacket struct {
 	PacketHeader
+}
+
+type CardPileRequestPacket struct {
+	PacketHeader
+	Pile uint8
+}
+
+type CardPileResponsePacket struct {
+	PacketHeader
+	Cards []keyforge.Card
+}
+
+type DrawCardRequestPacket struct {
+	PacketHeader
+}
+
+type DrawCardResponsePacket struct {
+	PacketHeader
+	Card keyforge.Card
+}
+
+type PlayCardRequestPacket struct {
+	PacketHeader
+	Pile  uint8
+	ID    string
+	Index uint8
+}
+
+type PlayCardResponsePacket struct {
+	PacketHeader
+	PlayCardRequestPacket
+	Played bool
 }
 
 func (p VersionPacket) GetPayload() ([]byte, error) {
@@ -79,6 +112,46 @@ func (p UpdateGameStatePacket) GetPayload() ([]byte, error) {
 }
 
 func (p UpdateGameStatePacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p CardPileRequestPacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p CardPileRequestPacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p DrawCardRequestPacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p DrawCardRequestPacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p DrawCardResponsePacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p DrawCardResponsePacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p PlayCardRequestPacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p PlayCardRequestPacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p PlayCardResponsePacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p PlayCardResponsePacket) GetHeader() PacketHeader {
 	return p.PacketHeader
 }
 
@@ -184,6 +257,8 @@ func ParsePacket(header PacketHeader, payload []byte) (Packet, error) {
 	return packet, nil
 }
 
+// RenderPacket - a giant case switch used to output the correct packet type
+// when packets are read off of the wire.
 func RenderPacket(header PacketHeader, payload []byte) (Packet, error) {
 	var packet Packet
 
@@ -196,12 +271,40 @@ func RenderPacket(header PacketHeader, payload []byte) (Packet, error) {
 		packet := ErrorPacket{}
 		e := json.Unmarshal(payload, &packet)
 		return packet, e
-	case PacketTypeVersion:
+	case PacketTypeVersionRequest:
+		packet := VersionPacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeVersionResponse:
 		packet := VersionPacket{}
 		e := json.Unmarshal(payload, &packet)
 		return packet, e
 	case PacketTypeUpdateGameState:
 		packet := UpdateGameStatePacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeCardPileRequest:
+		packet := CardPileRequestPacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeCardPileResponse:
+		packet := CardPileRequestPacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeDrawCardRequest:
+		packet := DrawCardRequestPacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeDrawCardResponse:
+		packet := DrawCardResponsePacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypePlayCardRequest:
+		packet := PlayCardRequestPacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypePlayCardResponse:
+		packet := PlayCardResponsePacket{}
 		e := json.Unmarshal(payload, &packet)
 		return packet, e
 	default:

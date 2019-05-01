@@ -1,8 +1,6 @@
 package kfnetwork
 
-import (
-	keyforge "keyforge/game"
-)
+import ()
 
 const (
 	GameStateGameStarted = iota
@@ -19,7 +17,7 @@ type Game struct {
 	Turn    int
 	Round   int
 	Running bool
-	Players []keyforge.Player
+	Players []PlayerClient
 }
 
 func NewGame() *Game {
