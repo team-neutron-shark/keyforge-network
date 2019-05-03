@@ -2,17 +2,9 @@ package kfnetwork
 
 import (
 	"fmt"
-	keyforge "keyforge/game"
 	"net"
 	"sync"
 )
-
-// PlayerClient - This type holds both the keyforge player type along with
-// the net.Conn object required for networked communication.
-type PlayerClient struct {
-	Client net.Conn
-	keyforge.Player
-}
 
 // Server - This type represent our server at a high level
 type Server struct {

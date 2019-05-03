@@ -11,8 +11,11 @@ const (
 	PacketTypeError
 	PacketTypeVersionRequest
 	PacketTypeVersionResponse
-	PacketTypeLogin
+	PacketTypeLoginRequest
+	PacketTypeLoginResponse
 	PacketTypeUpdateGameState
+	PacketTypeMulliganRequest
+	PacketTypeMulliganResponse
 	PacketTypeCardPileRequest
 	PacketTypeCardPileResponse
 	PacketTypeDrawCardRequest

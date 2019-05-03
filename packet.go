@@ -33,10 +33,14 @@ type ErrorPacket struct {
 	Message string
 }
 
-type LoginPacket struct {
+type LoginRequestPacket struct {
 	PacketHeader
 	Name string
 	ID   string
+}
+
+type LoginResponsePacket struct {
+	PacketHeader
 }
 
 type UpdateGameStatePacket struct {
@@ -99,11 +103,19 @@ func (p ErrorPacket) GetHeader() PacketHeader {
 	return p.PacketHeader
 }
 
-func (p LoginPacket) GetPayload() ([]byte, error) {
+func (p LoginRequestPacket) GetPayload() ([]byte, error) {
 	return json.Marshal(p)
 }
 
-func (p LoginPacket) GetHeader() PacketHeader {
+func (p LoginRequestPacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p LoginResponsePacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p LoginResponsePacket) GetHeader() PacketHeader {
 	return p.PacketHeader
 }
 

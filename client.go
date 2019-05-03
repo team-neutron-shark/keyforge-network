@@ -47,9 +47,9 @@ func (c *Client) SendExitRequest() error {
 }
 
 func (c *Client) SendLoginRequest() error {
-	packet := LoginPacket{}
+	packet := LoginRequestPacket{}
 	packet.Sequence = c.Sequence
-	packet.Type = PacketTypeLogin
+	packet.Type = PacketTypeLoginRequest
 	packet.Name = "test"
 	packet.ID = GenerateUUID()
 
