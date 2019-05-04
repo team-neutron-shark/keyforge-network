@@ -1,6 +1,7 @@
 package kfnetwork
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"sync"
@@ -14,7 +15,7 @@ type Server struct {
 	PacketQueue   chan Packet
 	Listener      net.Listener
 	ListenerMutex sync.Mutex
-	Clients       []PlayerClient
+	Clients       []*PlayerClient
 	ClientMutex   sync.Mutex
 	Running       bool
 }
@@ -137,7 +138,7 @@ func (s *Server) ReadLoop(client net.Conn) {
 			s.CloseConnection(client)
 			return
 		}
-		fmt.Println(packet)
+
 		if s.Debug {
 			payload, _ := packet.GetPayload()
 			logEntry := fmt.Sprintf("packet received from client %s!\nPayload: %s", client.RemoteAddr(), string(payload))
@@ -155,6 +156,52 @@ func (s *Server) CloseConnection(client net.Conn) {
 	client.Close()
 }
 
+func (s *Server) FindPlayerByConnection(connection net.Conn) (*PlayerClient, error) {
+	for _, player := range s.Clients {
+		if player.Client == connection {
+			return player, nil
+		}
+	}
+
+	return &PlayerClient{}, errors.New("could not find any players with the given connection")
+}
+
+func (s *Server) PlayerClientExists(client *PlayerClient) bool {
+	s.ClientMutex.Lock()
+	defer s.ClientMutex.Unlock()
+
+	for _, player := range s.Clients {
+		if player == client {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (s *Server) AddPlayerClient(player *PlayerClient) {
+	if !s.PlayerClientExists(player) {
+		s.ClientMutex.Lock()
+		defer s.ClientMutex.Unlock()
+		s.Clients = append(s.Clients, player)
+	}
+}
+
+func (s *Server) RemovePlayerClient(player *PlayerClient) {
+	clients := []*PlayerClient{}
+
+	s.ClientMutex.Lock()
+	defer s.ClientMutex.Unlock()
+
+	for _, client := range s.Clients {
+		if client != player {
+			clients = append(clients, client)
+		}
+	}
+
+	s.Clients = clients
+}
+
 func (s *Server) SendErrorPacket(client net.Conn, message string) error {
 	packet := ErrorPacket{}
 	packet.Sequence = 0
@@ -167,11 +214,13 @@ func (s *Server) SendErrorPacket(client net.Conn, message string) error {
 func (s *Server) HandlePacket(client net.Conn, packet Packet) {
 	switch packet.GetHeader().Type {
 	case PacketTypeVersionRequest:
-		s.HandleVersionPacket(client, packet.(VersionPacket))
+		s.HandleVersionRequest(client, packet.(VersionPacket))
+	case PacketTypeLoginRequest:
+		s.HandleLoginRequest(client, packet.(LoginRequestPacket))
 	}
 }
 
-func (s *Server) HandleVersionPacket(client net.Conn, packet VersionPacket) {
+func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) {
 	debugString := fmt.Sprintf("HandleVersionPacket: %+v", packet)
 	s.Log(debugString)
 	if packet.Version != ProtocolVersion {
@@ -182,4 +231,26 @@ func (s *Server) HandleVersionPacket(client net.Conn, packet VersionPacket) {
 		s.SendErrorPacket(client, "Protocol version mismatch.")
 		s.CloseConnection(client)
 	}
+}
+
+func (s *Server) HandleLoginRequest(client net.Conn, packet LoginRequestPacket) {
+	//TODO - add authentication logic; for now assume login succeeds
+	player := NewPlayerClient()
+	player.Name = packet.Name
+	player.ID = packet.ID
+	player.Client = client
+
+	s.AddPlayerClient(player)
+}
+
+func (s *Server) HandleExitRequest(client net.Conn, packet ExitPacket) error {
+	player, e := s.FindPlayerByConnection(client)
+
+	if e != nil {
+		return e
+	}
+
+	s.CloseConnection(player.Client)
+	s.RemovePlayerClient(player)
+	return nil
 }
