@@ -13,6 +13,10 @@ const (
 	PacketTypeVersionResponse
 	PacketTypeLoginRequest
 	PacketTypeLoginResponse
+	PacketTypeLobbyRequest
+	PacketTypeLobbyResponse
+	PacketTypeSelectDeckRequest
+	PacketTypeSelectDeckResponse
 	PacketTypeUpdateGameState
 	PacketTypeMulliganRequest
 	PacketTypeMulliganResponse
@@ -22,7 +26,10 @@ const (
 	PacketTypeDrawCardResponse
 	PacketTypePlayCardRequest
 	PacketTypePlayCardResponse
-	PacketTypeDiscardCard
+	PacketTypeDiscardCardRequest
+	PacketTypeDiscardCardResponse
+	PacketTypeUseCardRequest
+	PacketTypeUseCardResponse
 )
 
 type PileType uint8
