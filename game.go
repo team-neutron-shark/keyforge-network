@@ -16,10 +16,43 @@ const (
 	GameStateTurnEnded
 )
 
+const (
+	PlayerAffectAdditionalForgeCost = iota
+	PlayerAffectCannotForge
+	PlayerAffectCreaturesCannotFight
+	PlayerAffectPlayCardLimit
+	PlayerAffectDrawReduction
+	PlayerAffectDrawBonus
+	PlayerAffectPlayCreatureLimit
+	PlayerAffectCannotPlayBrobnar
+	PlayerAffectCannotPlayDis
+	PlayerAffectCannotPlayLogos
+	PlayerAffectCannotPlayMars
+	PlayerAffectCannotPlaySanctum
+	PlayerAffectCannotPlayShadows
+	PlayerAffectCannotPlayUntamed
+	PlayerAffectMustPlayBrobnar
+	PlayerAffectMustPlayDis
+	PlayerAffectMustPlayLogos
+	PlayerAffectMustPlayMars
+	PlayerAffectMustPlaySanctum
+	PlayerAffectMustPlayShadows
+	PlayerAffectMustPlayUntamed
+	PlayerAffectPlayArtifactAemberPenalty
+)
+
+const (
+	UpgradeAffectPower = iota
+	UpgradeAffectArmor
+	UpgradeAffectGainSteal
+	UpgradeAffectGainCapture
+)
+
 // PlayerClient - This type holds both the keyforge player type along with
 // the net.Conn object required for networked communication.
 type PlayerClient struct {
 	Active bool
+	ID     string
 	Client net.Conn
 	keyforge.Player
 }
@@ -29,7 +62,12 @@ type Game struct {
 	Turn    int
 	Round   int
 	Running bool
-	Players []PlayerClient
+	Players []*PlayerClient
+}
+
+func NewPlayerClient() *PlayerClient {
+	playerClient := new(PlayerClient)
+	return playerClient
 }
 
 func NewGame() *Game {
@@ -37,14 +75,18 @@ func NewGame() *Game {
 	return game
 }
 
-func (g *Game) FindActivePlayer() (PlayerClient, error) {
+func (g *Game) Start() {
+
+}
+
+func (g *Game) FindActivePlayer() (*PlayerClient, error) {
 	for _, player := range g.Players {
 		if player.Active {
 			return player, nil
 		}
 	}
 
-	return PlayerClient{}, errors.New("no active player found")
+	return &PlayerClient{}, errors.New("no active player found")
 }
 
 func (g *Game) AdvanceTurn() {
