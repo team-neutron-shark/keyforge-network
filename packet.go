@@ -79,6 +79,19 @@ type PlayCardResponsePacket struct {
 	Played bool
 }
 
+type DiscardCardRequestPacket struct {
+	PacketHeader
+	Pile  uint8
+	ID    string
+	Index uint8
+}
+
+type DiscardCardResponsePacket struct {
+	PacketHeader
+	DiscardCardRequestPacket
+	Played bool
+}
+
 func (p VersionPacket) GetPayload() ([]byte, error) {
 	return json.Marshal(p)
 }
@@ -164,6 +177,14 @@ func (p PlayCardResponsePacket) GetPayload() ([]byte, error) {
 }
 
 func (p PlayCardResponsePacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p DiscardCardResponsePacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p DiscardCardResponsePacket) GetHeader() PacketHeader {
 	return p.PacketHeader
 }
 
