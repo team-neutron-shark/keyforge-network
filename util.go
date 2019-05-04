@@ -1,9 +1,15 @@
 package kfnetwork
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"math/rand"
+	"os"
 	"time"
 )
+
+type ServerConfiguration struct {
+}
 
 func GenerateUUID() string {
 	var buffer []byte
@@ -21,4 +27,37 @@ func GenerateUUID() string {
 		}
 	}
 	return string(buffer)
+}
+
+func LoadConfig(filename string) (ServerConfiguration, error) {
+	config := ServerConfiguration{}
+
+	bytes, e := ioutil.ReadFile(filename)
+
+	if e != nil {
+		return config, e
+	}
+
+	e = json.Unmarshal(bytes, &config)
+
+	return config, e
+}
+
+func SaveConfig(config ServerConfiguration, filename string) error {
+	file, e := os.Create(filename)
+	defer file.Close()
+
+	if e != nil {
+		return e
+	}
+
+	bytes, e := json.MarshalIndent(config, "", "    ")
+
+	if e != nil {
+		return e
+	}
+
+	_, e = file.WriteString(string(bytes))
+
+	return e
 }
