@@ -17,6 +17,8 @@ type Server struct {
 	ListenerMutex sync.Mutex
 	Clients       []*PlayerClient
 	ClientMutex   sync.Mutex
+	CardManager   *CardManager
+	CardMutex     sync.Mutex
 	Running       bool
 }
 
@@ -26,6 +28,14 @@ func NewServer(address string) *Server {
 	server.Debug = true
 	server.Running = true
 	server.LogQueue = make(chan string, 1024)
+
+	server.CardManager = NewCardManager()
+	e := server.CardManager.LoadFromFile("data/cards.json")
+
+	if e != nil && server.Debug {
+		logEntry := fmt.Sprintf("error loading card data: %s", e.Error())
+		server.Log(logEntry)
+	}
 
 	// Start the listen loop on the specified address
 	go server.ListenLoop(address)
