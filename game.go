@@ -85,7 +85,7 @@ func (g *Game) FindActivePlayer() (*Player, error) {
 		}
 	}
 
-	return &PlayerClient{}, errors.New("no active player found")
+	return &Player{}, errors.New("no active player found")
 }
 
 func (g *Game) AdvanceTurn() {

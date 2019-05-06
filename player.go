@@ -40,11 +40,11 @@ func NewPlayer() *Player {
 	return player
 }
 
-func (p *PlayerClient) Affects() []*PlayerAffect {
+func (p *Player) Affects() []*PlayerAffect {
 	return p.affects
 }
 
-func (p *PlayerClient) AddAffect(affect *PlayerAffect) {
+func (p *Player) AddAffect(affect *PlayerAffect) {
 
 	if !p.HasAffect(affect) {
 		p.affectMutex.Lock()
@@ -53,7 +53,7 @@ func (p *PlayerClient) AddAffect(affect *PlayerAffect) {
 	}
 }
 
-func (p *PlayerClient) RemoveAffect(affect *PlayerAffect) {
+func (p *Player) RemoveAffect(affect *PlayerAffect) {
 	returnAffects := []*PlayerAffect{}
 
 	p.affectMutex.Lock()
@@ -68,7 +68,7 @@ func (p *PlayerClient) RemoveAffect(affect *PlayerAffect) {
 	p.affects = returnAffects
 }
 
-func (p *PlayerClient) FindAffectByCard(card *keyforge.Card) []*PlayerAffect {
+func (p *Player) FindAffectByCard(card *keyforge.Card) []*PlayerAffect {
 	foundAffects := []*PlayerAffect{}
 
 	for _, affect := range p.affects {
@@ -82,7 +82,7 @@ func (p *PlayerClient) FindAffectByCard(card *keyforge.Card) []*PlayerAffect {
 	return foundAffects
 }
 
-func (p *PlayerClient) HasAffect(affect *PlayerAffect) bool {
+func (p *Player) HasAffect(affect *PlayerAffect) bool {
 	for _, a := range p.affects {
 		if a == affect {
 			return true

@@ -166,17 +166,17 @@ func (s *Server) CloseConnection(client net.Conn) {
 	client.Close()
 }
 
-func (s *Server) FindPlayerByConnection(connection net.Conn) (*PlayerClient, error) {
+func (s *Server) FindPlayerByConnection(connection net.Conn) (*Player, error) {
 	for _, player := range s.Clients {
 		if player.Client == connection {
 			return player, nil
 		}
 	}
 
-	return &PlayerClient{}, errors.New("could not find any players with the given connection")
+	return &Player{}, errors.New("could not find any players with the given connection")
 }
 
-func (s *Server) PlayerClientExists(client *PlayerClient) bool {
+func (s *Server) PlayerExists(client *Player) bool {
 	s.ClientMutex.Lock()
 	defer s.ClientMutex.Unlock()
 
@@ -189,16 +189,16 @@ func (s *Server) PlayerClientExists(client *PlayerClient) bool {
 	return false
 }
 
-func (s *Server) AddPlayerClient(player *PlayerClient) {
-	if !s.PlayerClientExists(player) {
+func (s *Server) AddPlayer(player *Player) {
+	if !s.PlayerExists(player) {
 		s.ClientMutex.Lock()
 		defer s.ClientMutex.Unlock()
 		s.Clients = append(s.Clients, player)
 	}
 }
 
-func (s *Server) RemovePlayerClient(player *PlayerClient) {
-	clients := []*PlayerClient{}
+func (s *Server) RemovePlayer(player *Player) {
+	clients := []*Player{}
 
 	s.ClientMutex.Lock()
 	defer s.ClientMutex.Unlock()
@@ -245,12 +245,12 @@ func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) {
 
 func (s *Server) HandleLoginRequest(client net.Conn, packet LoginRequestPacket) {
 	//TODO - add authentication logic; for now assume login succeeds
-	player := NewPlayerClient()
+	player := NewPlayer()
 	player.Name = packet.Name
 	player.ID = packet.ID
 	player.Client = client
 
-	s.AddPlayerClient(player)
+	s.AddPlayer(player)
 }
 
 func (s *Server) HandleExitRequest(client net.Conn, packet ExitPacket) error {
@@ -261,6 +261,6 @@ func (s *Server) HandleExitRequest(client net.Conn, packet ExitPacket) error {
 	}
 
 	s.CloseConnection(player.Client)
-	s.RemovePlayerClient(player)
+	s.RemovePlayer(player)
 	return nil
 }
