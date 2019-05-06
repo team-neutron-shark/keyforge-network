@@ -4,13 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	keyforge "keyforge/game"
 	"os"
 )
-
-type Card struct {
-	keyforge.Card
-}
 
 type CardQuery struct {
 	id        string

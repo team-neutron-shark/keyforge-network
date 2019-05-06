@@ -66,7 +66,7 @@ type Game struct {
 	Turn    int
 	Round   int
 	Running bool
-	Players []*PlayerClient
+	Players []*Player
 }
 
 func NewGame() *Game {
@@ -78,7 +78,7 @@ func (g *Game) Start() {
 
 }
 
-func (g *Game) FindActivePlayer() (*PlayerClient, error) {
+func (g *Game) FindActivePlayer() (*Player, error) {
 	for _, player := range g.Players {
 		if player.Active {
 			return player, nil

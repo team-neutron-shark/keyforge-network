@@ -15,7 +15,7 @@ type Server struct {
 	PacketQueue   chan Packet
 	Listener      net.Listener
 	ListenerMutex sync.Mutex
-	Clients       []*PlayerClient
+	Clients       []*Player
 	ClientMutex   sync.Mutex
 	CardManager   *CardManager
 	CardMutex     sync.Mutex

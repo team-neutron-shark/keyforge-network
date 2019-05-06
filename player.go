@@ -6,20 +6,38 @@ import (
 	"sync"
 )
 
-// PlayerClient - This type holds both the keyforge player type along with
-// the net.Conn object required for networked communication.
-type PlayerClient struct {
+type Player struct {
 	Active      bool
 	ID          string
 	affectMutex sync.Mutex
 	affects     []*PlayerAffect
 	Client      net.Conn
-	keyforge.Player
+	Name        string
+	Game        *Game
+	Debug       bool
+	PlayerDeck  Deck
+	HandPile    []Card
+	DrawPile    []Card
+	DiscardPile []Card
+	ArchivePile []Card
+	PurgePile   []Card
+	Artifacts   []Card
+	Creatures   []Card
+	FirstTurn   bool
+	Amber       int
+	Keys        int
+	Chains      int
 }
 
-func NewPlayerClient() *PlayerClient {
-	playerClient := new(PlayerClient)
-	return playerClient
+// NewPlayer - Returns a pointer to a new player object.
+func NewPlayer() *Player {
+	player := new(Player)
+	player.DrawPile = make([]Card, 0)
+	player.HandPile = make([]Card, 0)
+	player.ArchivePile = make([]Card, 0)
+	player.DiscardPile = make([]Card, 0)
+
+	return player
 }
 
 func (p *PlayerClient) Affects() []*PlayerAffect {
