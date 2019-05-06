@@ -2,12 +2,10 @@ package kfnetwork
 
 import (
 	"errors"
-	keyforge "keyforge/game"
-	"net"
 )
 
 const (
-	GameStateGameStarted = iota
+	GameStateGameStarted uint = iota
 	GameStateDrawFirstHand
 	GameStateMulligan
 	GameStateRoundStarted
@@ -17,7 +15,7 @@ const (
 )
 
 const (
-	PlayerAffectAdditionalForgeCost = iota
+	PlayerAffectAdditionalForgeCost uint = iota
 	PlayerAffectCannotForge
 	PlayerAffectCreaturesCannotFight
 	PlayerAffectPlayCardLimit
@@ -38,24 +36,30 @@ const (
 	PlayerAffectMustPlaySanctum
 	PlayerAffectMustPlayShadows
 	PlayerAffectMustPlayUntamed
-	PlayerAffectPlayArtifactAemberPenalty
+	PlayerAffectPlayArtifactAmberPenalty
 )
 
 const (
-	UpgradeAffectPower = iota
-	UpgradeAffectArmor
+	UpgradeAffectPower uint = iota
+	UpgradeAffectGainArmor
+	UpgradeAffectGainTaunt
 	UpgradeAffectGainSteal
 	UpgradeAffectGainCapture
+	UpgradeAffectGainAssault
+	UpgradeAffectGainElusive
+	UpgradeAffectGainSkirmish
+	UpgradeAffectGainHazardous
+	UpgradeAffectGainAllHouses
+	UpgradeAffectGainActiveHouse
+	UpgradeAffectStunExhaust
+	UpgradeAffectReadySameCreature
+	UpgradeAffectArchiveOnDeath
+	UpgradeAffectSwapBattleLine
+	UpgradeAffectIncreaseOpponentForgeCost
+	UpgradeAffectReapDamage
+	UpgradeAffectDestroyedDamageEachCreature
+	UpgradeAffectDestroyMostPowerfulCreature
 )
-
-// PlayerClient - This type holds both the keyforge player type along with
-// the net.Conn object required for networked communication.
-type PlayerClient struct {
-	Active bool
-	ID     string
-	Client net.Conn
-	keyforge.Player
-}
 
 type Game struct {
 	Seed    int64
@@ -63,11 +67,6 @@ type Game struct {
 	Round   int
 	Running bool
 	Players []*PlayerClient
-}
-
-func NewPlayerClient() *PlayerClient {
-	playerClient := new(PlayerClient)
-	return playerClient
 }
 
 func NewGame() *Game {

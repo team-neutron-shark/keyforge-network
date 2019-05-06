@@ -11,7 +11,7 @@ func TestReadWritePacket(t *testing.T) {
 
 	packet := kfnetwork.VersionPacket{}
 	packet.Sequence = 12345
-	packet.Type = kfnetwork.PacketTypeVersion
+	packet.Type = kfnetwork.PacketTypeVersionRequest
 	packet.Version = 1.23
 
 	e := kfnetwork.WritePacket(testConnection, packet)
@@ -32,7 +32,7 @@ func TestReadWritePacket(t *testing.T) {
 		t.Error("Packet sequence not read correctly.")
 	}
 
-	if packetResult.(kfnetwork.VersionPacket).Type != kfnetwork.PacketTypeVersion {
+	if packetResult.(kfnetwork.VersionPacket).Type != kfnetwork.PacketTypeVersionRequest {
 		t.Error("Packet type not read correctly.")
 	}
 
