@@ -1,10 +1,10 @@
 package kfnetwork
 
 import (
-	keyforge "keyforge/game"
+	"bytes"
 	"encoding/json"
 	"errors"
-	"bytes"
+	keyforge "keyforge/game"
 	"os"
 )
 
@@ -114,4 +114,20 @@ func (c *CardManager) QueryCard(query *CardQuery) (Card, error) {
 	}
 
 	return Card{}, errors.New("no card found with the given query")
+}
+
+func (c *CardManager) CardExists(query *CardQuery) bool {
+	for _, card := range c.cards {
+		if query.ID() == card.ID && query.Expansion() == card.Expansion && query.Number() == card.CardNumber {
+			return true
+		}
+	}
+
+	for _, card := range c.cards {
+		if query.Expansion() == card.Expansion && query.Number() == card.CardNumber {
+			return true
+		}
+	}
+
+	return false
 }
