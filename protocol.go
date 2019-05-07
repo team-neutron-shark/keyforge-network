@@ -13,10 +13,26 @@ const (
 	PacketTypeVersionResponse
 	PacketTypeLoginRequest
 	PacketTypeLoginResponse
-	PacketTypeLobbyRequest
-	PacketTypeLobbyResponse
+	PacketTypeCreateLobbyRequest
+	PacketTypeCreateLobbyResponse
+	PacketTypeJoinLobbyRequest
+	PacketTypeJoinLobbyResponse
+	PacketTypeLeaveLobbyRequest
+	PacketTypeLeaveLobbyResponse
+	PacketTypeKickLobbyRequest
+	PacketTypeKickLobbyResponse
+	PacketTypeBanLobbyRequest
+	PacketTypeBanLobbyResponse
+	PacketTypeConcedeGameRequest
+	PacketTypeConcedeGameResponse
 	PacketTypeSelectDeckRequest
 	PacketTypeSelectDeckResponse
+	PacketTypeReadyRequest
+	PacketTypeReadyResponse
+	PacketTypeStartGameRequest
+	PacketTypeStartGameResponse
+	PacketTypeLeaveGameRequest
+	PacketTypeLeaveGameResponse
 	PacketTypeUpdateGameState
 	PacketTypeMulliganRequest
 	PacketTypeMulliganResponse
