@@ -12,10 +12,10 @@ type Server struct {
 	Clients       []*Player
 	ClientMutex   sync.Mutex
 	CardManager   *CardManager
-	CardMutex     sync.Mutex
 	Debug         bool
 	Listener      net.Listener
 	ListenerMutex sync.Mutex
+	Lobbies       []*Lobby
 	LogQueue      chan string
 	PacketQueue   chan Packet
 	Running       bool
@@ -73,7 +73,7 @@ func (s *Server) ListenLoop(address string) {
 		client, e := s.Accept()
 
 		// If we encounter an error, close the client.
-		if e != nil {
+		if e != nil && client != nil {
 			client.Close()
 		} else {
 			if s.Debug {
@@ -98,6 +98,39 @@ func (s *Server) Accept() (net.Conn, error) {
 	}
 
 	return connection, nil
+}
+
+func (s *Server) AddLobby(creator *Player) *Lobby {
+	lobby := NewLobby()
+	lobby.SetID(GenerateUUID())
+	lobby.AddPlayer(creator)
+	lobby.SetHost(creator)
+
+	s.Lobbies = append(s.Lobbies, lobby)
+
+	return lobby
+}
+
+func (s *Server) RemoveLobby(lobby *Lobby) {
+	lobbies := []*Lobby{}
+
+	for _, l := range s.Lobbies {
+		if l != lobby {
+			lobbies = append(lobbies, l)
+		}
+	}
+
+	s.Lobbies = lobbies
+}
+
+func (s *Server) FindLobbyByID(id string) (*Lobby, error) {
+	for _, lobby := range s.Lobbies {
+		if lobby.ID() == id {
+			return lobby, nil
+		}
+	}
+
+	return &Lobby{}, errors.New("no lobby found with the given ID")
 }
 
 // HandleConnection - Process incoming connections after being accepted.
@@ -150,7 +183,7 @@ func (s *Server) ReadLoop(client net.Conn) {
 
 		if s.Debug {
 			payload, _ := packet.GetPayload()
-			logEntry := fmt.Sprintf("packet received from client %s!\nPayload: %s", client.RemoteAddr(), string(payload))
+			logEntry := fmt.Sprintf("packet received from client %s - Payload: %s", client.RemoteAddr(), string(payload))
 			s.Log(logEntry)
 		}
 		s.HandlePacket(client, packet)
@@ -189,6 +222,8 @@ func (s *Server) PlayerExists(client *Player) bool {
 }
 
 func (s *Server) AddPlayer(player *Player) {
+	logEntry := fmt.Sprintf("Adding player %s.", player.Name)
+	s.Log(logEntry)
 	if !s.PlayerExists(player) {
 		s.ClientMutex.Lock()
 		defer s.ClientMutex.Unlock()
@@ -214,52 +249,19 @@ func (s *Server) RemovePlayer(player *Player) {
 func (s *Server) SendErrorPacket(client net.Conn, message string) error {
 	packet := ErrorPacket{}
 	packet.Sequence = 0
+	packet.Type = PacketTypeError
 	packet.Message = message
 
 	e := WritePacket(client, packet)
 	return e
 }
 
-func (s *Server) HandlePacket(client net.Conn, packet Packet) {
-	switch packet.GetHeader().Type {
-	case PacketTypeVersionRequest:
-		s.HandleVersionRequest(client, packet.(VersionPacket))
-	case PacketTypeLoginRequest:
-		s.HandleLoginRequest(client, packet.(LoginRequestPacket))
-	}
-}
+func (s *Server) SendCreateLobbyResponse(player *Player, id string) error {
+	packet := CreateLobbyResponsePacket{}
+	packet.Type = PacketTypeCreateLobbyResponse
+	packet.Sequence = 0
+	packet.ID = id
 
-func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) {
-	debugString := fmt.Sprintf("HandleVersionPacket: %+v", packet)
-	s.Log(debugString)
-	if packet.Version != ProtocolVersion {
-		if s.Debug {
-			logEntry := fmt.Sprintf("Client %s sent a version packet with a mismatching version.", client.RemoteAddr())
-			s.Log(logEntry)
-		}
-		s.SendErrorPacket(client, "Protocol version mismatch.")
-		s.CloseConnection(client)
-	}
-}
-
-func (s *Server) HandleLoginRequest(client net.Conn, packet LoginRequestPacket) {
-	//TODO - add authentication logic; for now assume login succeeds
-	player := NewPlayer()
-	player.Name = packet.Name
-	player.ID = packet.ID
-	player.Client = client
-
-	s.AddPlayer(player)
-}
-
-func (s *Server) HandleExitRequest(client net.Conn, packet ExitPacket) error {
-	player, e := s.FindPlayerByConnection(client)
-
-	if e != nil {
-		return e
-	}
-
-	s.CloseConnection(player.Client)
-	s.RemovePlayer(player)
-	return nil
+	e := WritePacket(player.Client, packet)
+	return e
 }
