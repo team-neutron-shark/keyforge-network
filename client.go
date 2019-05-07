@@ -58,6 +58,16 @@ func (c *Client) SendLoginRequest() error {
 	return e
 }
 
+func (c *Client) SendCreateLobbyRequest() error {
+	packet := CreateLobbyRequestPacket{}
+	packet.Sequence = c.Sequence
+	packet.Type = PacketTypeCreateLobbyRequest
+
+	e := WritePacket(c.Connection, packet)
+	c.Sequence++
+	return e
+}
+
 func (c *Client) SendGetCardPile(pile uint8) error {
 	packet := CardPileRequestPacket{}
 	packet.Sequence = c.Sequence
