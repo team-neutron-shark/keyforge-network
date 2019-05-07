@@ -7,5 +7,7 @@ import (
 func main() {
 	client := kfnetwork.NewClient()
 	client.Connect(":8888")
-	client.SendVersion()
+	client.SendVersionRequest()
+	client.SendLoginRequest()
+	client.SendCreateLobbyRequest()
 }
