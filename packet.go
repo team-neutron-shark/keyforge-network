@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
-	keyforge "keyforge/game"
 	"net"
 )
 
@@ -14,14 +13,14 @@ type Packet interface {
 }
 
 type PacketHeader struct {
-	Sequence uint16
-	Type     uint16
+	Sequence uint16 `json:"sequence"`
+	Type     uint16 `json:"type"`
 	Length   uint16 `json:"-"`
 }
 
 type VersionPacket struct {
 	PacketHeader
-	Version float32
+	Version float32 `json:"version"`
 }
 
 type ExitPacket struct {
@@ -30,17 +29,80 @@ type ExitPacket struct {
 
 type ErrorPacket struct {
 	PacketHeader
-	Message string
+	Message string `json:"message"`
 }
 
 type LoginRequestPacket struct {
 	PacketHeader
-	Name string
-	ID   string
+	Name string `json:"name"`
+	ID   string `json:"id"`
 }
 
 type LoginResponsePacket struct {
 	PacketHeader
+}
+
+type CreateLobbyRequestPacket struct {
+	PacketHeader
+	Name string `json:"name"`
+}
+
+type CreateLobbyResponsePacket struct {
+	PacketHeader
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type JoinLobbyRequestPacket struct {
+	PacketHeader
+	ID string `json:"id"`
+}
+
+type JoinLobbyResponsePacket struct {
+	PacketHeader
+	ID      string `json:"id"`
+	Success bool   `json:"success"`
+}
+
+type LeaveLobbyRequestPacket struct {
+	PacketHeader
+}
+
+type LeaveLobbyResponsePacket struct {
+	PacketHeader
+}
+
+type LobbyChatRequestPacket struct {
+	PacketHeader
+	Message string `json:"message"`
+}
+
+type LobbyChatResponsePacket struct {
+	PacketHeader
+	Name    string `json:"name"`
+	Message string `json:"message"`
+}
+
+type LobbyBanRequestPacket struct {
+	PacketHeader
+	Target string `json:"target"`
+}
+
+type LobbyBanResponsePacket struct {
+	PacketHeader
+	Target  string `json:"target"`
+	Success bool   `json:"success"`
+}
+
+type LobbyKickRequestPacket struct {
+	PacketHeader
+	Target string `json:"target"`
+}
+
+type LobbyKickResponsePacket struct {
+	PacketHeader
+	Target  string `json:"target"`
+	Success bool   `json:"success"`
 }
 
 type UpdateGameStatePacket struct {
@@ -49,12 +111,12 @@ type UpdateGameStatePacket struct {
 
 type CardPileRequestPacket struct {
 	PacketHeader
-	Pile uint8
+	Pile uint8 `json:"pile"`
 }
 
 type CardPileResponsePacket struct {
 	PacketHeader
-	Cards []keyforge.Card
+	Cards []Card `json:"cards"`
 }
 
 type DrawCardRequestPacket struct {
@@ -63,33 +125,37 @@ type DrawCardRequestPacket struct {
 
 type DrawCardResponsePacket struct {
 	PacketHeader
-	Card keyforge.Card
+	Card Card `json:"card"`
 }
 
 type PlayCardRequestPacket struct {
 	PacketHeader
-	Pile  uint8
-	ID    string
-	Index uint8
+	Pile  uint8  `json:"pile"`
+	ID    string `json:"id"`
+	Index uint8  `json:"index"`
 }
 
 type PlayCardResponsePacket struct {
 	PacketHeader
-	PlayCardRequestPacket
-	Played bool
+	Pile   uint8  `json:"pile"`
+	ID     string `json:"id"`
+	Index  uint8  `json:"index"`
+	Played bool   `json:"played"`
 }
 
 type DiscardCardRequestPacket struct {
 	PacketHeader
-	Pile  uint8
-	ID    string
-	Index uint8
+	Pile  uint8  `json:"pile"`
+	ID    string `json:"id"`
+	Index uint8  `json:"index"`
 }
 
 type DiscardCardResponsePacket struct {
 	PacketHeader
-	DiscardCardRequestPacket
-	Played bool
+	Pile   uint8  `json:"pile"`
+	ID     string `json:"id"`
+	Index  uint8  `json:"index"`
+	Played bool   `json:"played"`
 }
 
 func (p VersionPacket) GetPayload() ([]byte, error) {
@@ -129,6 +195,86 @@ func (p LoginResponsePacket) GetPayload() ([]byte, error) {
 }
 
 func (p LoginResponsePacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p CreateLobbyRequestPacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p CreateLobbyRequestPacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p CreateLobbyResponsePacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p CreateLobbyResponsePacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p JoinLobbyRequestPacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p JoinLobbyRequestPacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p JoinLobbyResponsePacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p JoinLobbyResponsePacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p LeaveLobbyRequestPacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p LeaveLobbyRequestPacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p LeaveLobbyResponsePacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p LeaveLobbyResponsePacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p LobbyBanRequestPacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p LobbyBanRequestPacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p LobbyBanResponsePacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p LobbyBanResponsePacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p LobbyKickRequestPacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p LobbyKickRequestPacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p LobbyKickResponsePacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p LobbyKickResponsePacket) GetHeader() PacketHeader {
 	return p.PacketHeader
 }
 
@@ -310,6 +456,54 @@ func RenderPacket(header PacketHeader, payload []byte) (Packet, error) {
 		return packet, e
 	case PacketTypeVersionResponse:
 		packet := VersionPacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeLoginRequest:
+		packet := LoginRequestPacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeLoginResponse:
+		packet := LoginResponsePacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeCreateLobbyRequest:
+		packet := CreateLobbyRequestPacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeCreateLobbyResponse:
+		packet := CreateLobbyResponsePacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeJoinLobbyRequest:
+		packet := JoinLobbyRequestPacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeJoinLobbyResponse:
+		packet := JoinLobbyResponsePacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeLeaveLobbyRequest:
+		packet := LeaveLobbyRequestPacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeLeaveLobbyResponse:
+		packet := LeaveLobbyResponsePacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeBanLobbyRequest:
+		packet := LobbyBanRequestPacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeBanLobbyResponse:
+		packet := LobbyBanResponsePacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeKickLobbyRequest:
+		packet := LobbyKickRequestPacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeKickLobbyResponse:
+		packet := LobbyKickResponsePacket{}
 		e := json.Unmarshal(payload, &packet)
 		return packet, e
 	case PacketTypeUpdateGameState:
