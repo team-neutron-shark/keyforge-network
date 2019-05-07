@@ -48,17 +48,12 @@ func (p *Player) Affects() []*PlayerAffect {
 func (p *Player) AddAffect(affect *PlayerAffect) {
 
 	if !p.HasAffect(affect) {
-		p.affectMutex.Lock()
 		p.affects = append(p.affects, affect)
-		p.affectMutex.Unlock()
 	}
 }
 
 func (p *Player) RemoveAffect(affect *PlayerAffect) {
 	returnAffects := []*PlayerAffect{}
-
-	p.affectMutex.Lock()
-	defer p.affectMutex.Unlock()
 
 	for _, a := range p.affects {
 		if a != affect {

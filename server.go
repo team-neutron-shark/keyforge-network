@@ -9,16 +9,15 @@ import (
 
 // Server - This type represent our server at a high level
 type Server struct {
-	Debug         bool
-	TestString    string
-	LogQueue      chan string
-	PacketQueue   chan Packet
-	Listener      net.Listener
-	ListenerMutex sync.Mutex
 	Clients       []*Player
 	ClientMutex   sync.Mutex
 	CardManager   *CardManager
 	CardMutex     sync.Mutex
+	Debug         bool
+	Listener      net.Listener
+	ListenerMutex sync.Mutex
+	LogQueue      chan string
+	PacketQueue   chan Packet
 	Running       bool
 }
 
