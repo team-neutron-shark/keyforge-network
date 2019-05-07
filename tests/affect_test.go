@@ -6,7 +6,7 @@ import (
 )
 
 func TestPlayerAddAffect(t *testing.T) {
-	player := kfnetwork.NewPlayerClient()
+	player := kfnetwork.NewPlayer()
 
 	// Simulate a one-turn inability to forge a la Miasma.
 	affect := kfnetwork.NewPlayerAffect()
@@ -36,7 +36,7 @@ func TestPlayerAddAffect(t *testing.T) {
 }
 
 func TestPlayerAddSameAffectTwice(t *testing.T) {
-	player := kfnetwork.NewPlayerClient()
+	player := kfnetwork.NewPlayer()
 
 	// Simulate a one-turn inability to forge a la Miasma.
 	miasmaAffect := kfnetwork.NewPlayerAffect()
@@ -55,7 +55,7 @@ func TestPlayerAddSameAffectTwice(t *testing.T) {
 }
 
 func TestPlayerRemoveAffect(t *testing.T) {
-	player := kfnetwork.NewPlayerClient()
+	player := kfnetwork.NewPlayer()
 
 	// Simulate a one-turn inability to forge a la Miasma.
 	miasmaAffect := kfnetwork.NewPlayerAffect()
