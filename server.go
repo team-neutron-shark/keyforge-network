@@ -100,11 +100,12 @@ func (s *Server) Accept() (net.Conn, error) {
 	return connection, nil
 }
 
-func (s *Server) AddLobby(creator *Player) *Lobby {
+func (s *Server) AddLobby(creator *Player, name string) *Lobby {
 	lobby := NewLobby()
 	lobby.SetID(GenerateUUID())
 	lobby.AddPlayer(creator)
 	lobby.SetHost(creator)
+	lobby.name = name
 
 	s.Lobbies = append(s.Lobbies, lobby)
 
@@ -222,7 +223,7 @@ func (s *Server) PlayerExists(client *Player) bool {
 }
 
 func (s *Server) AddPlayer(player *Player) {
-	logEntry := fmt.Sprintf("Adding player %s.", player.Name)
+	logEntry := fmt.Sprintf("Player %s logged in.", player.Name)
 	s.Log(logEntry)
 	if !s.PlayerExists(player) {
 		s.ClientMutex.Lock()

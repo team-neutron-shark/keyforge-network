@@ -34,8 +34,9 @@ type ErrorPacket struct {
 
 type LoginRequestPacket struct {
 	PacketHeader
-	Name string `json:"name"`
-	ID   string `json:"id"`
+	Name  string `json:"name"`
+	ID    string `json:"id"`
+	Token string `json:"token"`
 }
 
 type LoginResponsePacket struct {

@@ -46,22 +46,24 @@ func (c *Client) SendExitRequest() error {
 	return e
 }
 
-func (c *Client) SendLoginRequest() error {
+func (c *Client) SendLoginRequest(name string, id string, token string) error {
 	packet := LoginRequestPacket{}
 	packet.Sequence = c.Sequence
 	packet.Type = PacketTypeLoginRequest
-	packet.Name = "test"
-	packet.ID = GenerateUUID()
+	packet.Name = name
+	packet.ID = id
+	packet.Token = token
 
 	e := WritePacket(c.Connection, packet)
 	c.Sequence++
 	return e
 }
 
-func (c *Client) SendCreateLobbyRequest() error {
+func (c *Client) SendCreateLobbyRequest(name string) error {
 	packet := CreateLobbyRequestPacket{}
 	packet.Sequence = c.Sequence
 	packet.Type = PacketTypeCreateLobbyRequest
+	packet.Name = name
 
 	e := WritePacket(c.Connection, packet)
 	c.Sequence++

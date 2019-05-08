@@ -63,9 +63,9 @@ func (s *Server) HandleCreateLobbyRequest(client net.Conn, packet CreateLobbyReq
 		return e
 	}
 
-	lobby := s.AddLobby(player)
+	lobby := s.AddLobby(player, packet.Name)
 
-	logEntry := fmt.Sprintf("Player %s created lobby %s", player.Name, lobby.ID())
+	logEntry := fmt.Sprintf("Player %s created lobby %s (%s)", player.Name, lobby.name, lobby.ID())
 	s.Log(logEntry)
 
 	e = s.SendCreateLobbyResponse(player, lobby.ID())
