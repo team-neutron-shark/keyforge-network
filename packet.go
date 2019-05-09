@@ -4,12 +4,12 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net"
 )
 
 type Packet interface {
 	GetHeader() PacketHeader
-	GetPayload() ([]byte, error)
 }
 
 type PacketHeader struct {
@@ -61,6 +61,15 @@ type CreateLobbyResponsePacket struct {
 	PacketHeader
 	ID   string `json:"id"`
 	Name string `json:"name"`
+}
+
+type LobbyListRequestPacket struct {
+	PacketHeader
+}
+
+type LobbyListResponsePacket struct {
+	PacketHeader
+	LobbyList
 }
 
 type JoinLobbyRequestPacket struct {
@@ -178,212 +187,8 @@ type DiscardCardResponsePacket struct {
 	Played bool   `json:"played"`
 }
 
-func (p VersionPacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p VersionPacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p ExitPacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p ExitPacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p ErrorPacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p ErrorPacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p LoginRequestPacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p LoginRequestPacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p LoginResponsePacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p LoginResponsePacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p PlayerListRequestPacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p PlayerListRequestPacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p PlayerListResponsePacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p PlayerListResponsePacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p GlobalChatRequestPacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p GlobalChatRequestPacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p GlobalChatResponsePacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p GlobalChatResponsePacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p CreateLobbyRequestPacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p CreateLobbyRequestPacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p CreateLobbyResponsePacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p CreateLobbyResponsePacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p JoinLobbyRequestPacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p JoinLobbyRequestPacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p JoinLobbyResponsePacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p JoinLobbyResponsePacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p LeaveLobbyRequestPacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p LeaveLobbyRequestPacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p LeaveLobbyResponsePacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p LeaveLobbyResponsePacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p LobbyBanRequestPacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p LobbyBanRequestPacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p LobbyBanResponsePacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p LobbyBanResponsePacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p LobbyKickRequestPacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p LobbyKickRequestPacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p LobbyKickResponsePacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p LobbyKickResponsePacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p UpdateGameStatePacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p UpdateGameStatePacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p CardPileRequestPacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p CardPileRequestPacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p DrawCardRequestPacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p DrawCardRequestPacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p DrawCardResponsePacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p DrawCardResponsePacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p PlayCardRequestPacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p PlayCardRequestPacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p PlayCardResponsePacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p PlayCardResponsePacket) GetHeader() PacketHeader {
-	return p.PacketHeader
-}
-
-func (p DiscardCardResponsePacket) GetPayload() ([]byte, error) {
-	return json.Marshal(p)
-}
-
-func (p DiscardCardResponsePacket) GetHeader() PacketHeader {
-	return p.PacketHeader
+func (p PacketHeader) GetHeader() PacketHeader {
+	return p
 }
 
 func (p *PacketHeader) GetBytes() []byte {
@@ -452,27 +257,17 @@ func ReadPacket(client net.Conn) (Packet, error) {
 func WritePacket(client net.Conn, packet Packet) error {
 	payload := []byte{}
 	header := packet.GetHeader()
-	jsonPayload, e := packet.GetPayload()
+	jsonPayload, e := GetPacketPayload(packet)
+	fmt.Println("WritePacket:", string(jsonPayload))
 
 	if e != nil {
 		return e
 	}
 
 	header.Length = uint16(len(jsonPayload))
-	actualPacket, e := ParsePacket(header, jsonPayload)
-
-	if e != nil {
-		return e
-	}
-
-	bytes, e := actualPacket.GetPayload()
-
-	if e != nil {
-		return e
-	}
 
 	payload = append(payload, header.GetBytes()...)
-	payload = append(payload, bytes...)
+	payload = append(payload, jsonPayload...)
 
 	client.Write(payload)
 	return nil
@@ -532,6 +327,14 @@ func RenderPacket(header PacketHeader, payload []byte) (Packet, error) {
 		return packet, e
 	case PacketTypePlayerListResponse:
 		packet := PlayerListResponsePacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeLobbyListRequest:
+		packet := LobbyListRequestPacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeLobbyListResponse:
+		packet := LobbyListResponsePacket{}
 		e := json.Unmarshal(payload, &packet)
 		return packet, e
 	case PacketTypeCreateLobbyRequest:
@@ -605,4 +408,8 @@ func RenderPacket(header PacketHeader, payload []byte) (Packet, error) {
 	default:
 		return packet, errors.New("unknown packet type")
 	}
+}
+
+func GetPacketPayload(packet Packet) ([]byte, error) {
+	return json.Marshal(packet)
 }

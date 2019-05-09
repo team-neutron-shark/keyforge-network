@@ -129,3 +129,26 @@ func (s *Server) HandleGlobalChatRequest(client net.Conn, packet GlobalChatReque
 	s.Log(logEntry)
 	return nil
 }
+
+func (s *Server) HandleLobbyListRequest(client net.Conn, packet LobbyListRequestPacket) error {
+	lobbyList := LobbyList{}
+
+	player, e := s.FindPlayerByConnection(client)
+
+	if e != nil {
+		return e
+	}
+
+	for _, lobby := range s.Lobbies {
+		entry := LobbyListEntry{ID: lobby.ID(), Name: lobby.Name()}
+		lobbyList.Lobbies = append(lobbyList.Lobbies, entry)
+	}
+
+	lobbyList.Count = uint(len(lobbyList.Lobbies))
+
+	s.SendLobbyListResponse(player, lobbyList)
+
+	logEntry := fmt.Sprintf("Player %s requested a lobby list.", player.Name)
+	s.Log(logEntry)
+	return nil
+}

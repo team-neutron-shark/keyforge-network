@@ -17,6 +17,8 @@ const (
 	PacketTypePlayerListResponse
 	PacketTypeGlobalChatRequest
 	PacketTypeGlobalChatResponse
+	PacketTypeLobbyListRequest
+	PacketTypeLobbyListResponse
 	PacketTypeCreateLobbyRequest
 	PacketTypeCreateLobbyResponse
 	PacketTypeJoinLobbyRequest

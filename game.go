@@ -71,6 +71,16 @@ type PlayerList struct {
 	Players []PlayerListEntry `json:"players"`
 }
 
+type LobbyListEntry struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type LobbyList struct {
+	Count   uint `json:"count"`
+	Lobbies []LobbyListEntry
+}
+
 type Game struct {
 	Seed    int64
 	Turn    int

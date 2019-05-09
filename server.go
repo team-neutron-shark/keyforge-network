@@ -187,7 +187,7 @@ func (s *Server) ReadLoop(client net.Conn) {
 		}
 
 		if s.Debug {
-			payload, _ := packet.GetPayload()
+			payload, _ := GetPacketPayload(packet)
 			logEntry := fmt.Sprintf("packet received from client %s - Payload: %s", client.RemoteAddr(), string(payload))
 			s.Log(logEntry)
 		}
@@ -277,6 +277,17 @@ func (s *Server) SendPlayerListResponse(player *Player, list PlayerList) error {
 	packet.Sequence = 0
 	packet.Count = list.Count
 	packet.Players = list.Players
+
+	e := WritePacket(player.Client, packet)
+	return e
+}
+
+func (s *Server) SendLobbyListResponse(player *Player, list LobbyList) error {
+	packet := LobbyListResponsePacket{}
+	packet.Type = PacketTypeLobbyListResponse
+	packet.Sequence = 0
+	packet.Count = list.Count
+	packet.Lobbies = list.Lobbies
 
 	e := WritePacket(player.Client, packet)
 	return e
