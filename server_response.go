@@ -11,6 +11,8 @@ func (s *Server) HandlePacket(client net.Conn, packet Packet) {
 		s.HandleVersionRequest(client, packet.(VersionPacket))
 	case PacketTypeLoginRequest:
 		s.HandleLoginRequest(client, packet.(LoginRequestPacket))
+	case PacketTypeGlobalChatRequest:
+		s.HandleGlobalChatRequest(client, packet.(GlobalChatRequestPacket))
 	case PacketTypePlayerListRequest:
 		s.HandlePlayerListRequest(client, packet.(PlayerListRequestPacket))
 	case PacketTypeCreateLobbyRequest:
@@ -74,10 +76,6 @@ func (s *Server) HandleCreateLobbyRequest(client net.Conn, packet CreateLobbyReq
 	return e
 }
 
-func (s *Server) HandleLobbyChatRequest(client net.Conn, packet LobbyChatRequestPacket) error {
-	return nil
-}
-
 func (s *Server) HandlePlayerListRequest(client net.Conn, packet PlayerListRequestPacket) error {
 	player, e := s.FindPlayerByConnection(client)
 
@@ -108,6 +106,26 @@ func (s *Server) HandlePlayerListRequest(client net.Conn, packet PlayerListReque
 	}
 
 	logEntry := fmt.Sprintf("Player %s requested the player list", player.Name)
+	s.Log(logEntry)
+	return nil
+}
+
+func (s *Server) HandleLobbyChatRequest(client net.Conn, packet LobbyChatRequestPacket) error {
+	return nil
+}
+
+func (s *Server) HandleGlobalChatRequest(client net.Conn, packet GlobalChatRequestPacket) error {
+	player, e := s.FindPlayerByConnection(client)
+
+	if e != nil {
+		return e
+	}
+
+	for _, p := range s.Clients {
+		s.SendGlobalChatResponse(p, player.Name, packet.Message)
+	}
+
+	logEntry := fmt.Sprintf("(Global Chat) %s: %s", player.Name, packet.Message)
 	s.Log(logEntry)
 	return nil
 }

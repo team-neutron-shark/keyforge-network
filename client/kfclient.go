@@ -50,6 +50,8 @@ func routeCommand(command string, args []string) {
 		connect(args)
 	case "login":
 		login(args)
+	case "global":
+		global(args)
 	case "lobby":
 		createLobby(args)
 	case "who":
@@ -102,9 +104,19 @@ func login(args []string) error {
 		return e
 	}
 
-	client.SendVersionRequest()
-	client.SendLoginRequest(user.UserName, user.ID, user.Token)
+	e = client.SendVersionRequest()
 
+	if e != nil {
+		return e
+	}
+
+	e = client.SendLoginRequest(user.UserName, user.ID, user.Token)
+
+	if e != nil {
+		return e
+	}
+
+	fmt.Println("Logged in as user", username)
 	return nil
 }
 
@@ -126,6 +138,14 @@ func quit() {
 	os.Exit(0)
 }
 
+func global(args []string) {
+	if len(args) < 1 {
+		return
+	}
+	message := strings.Join(args, " ")
+	client.SendGlobalChatRequest(message)
+}
+
 func readLoop() {
 	for {
 		packet, e := kfnetwork.ReadPacket(client.Connection)
@@ -144,13 +164,21 @@ func handlePacket(packet kfnetwork.Packet) {
 	switch packet.GetHeader().Type {
 	case kfnetwork.PacketTypePlayerListResponse:
 		playerListResponse(packet.(kfnetwork.PlayerListResponsePacket))
+	case kfnetwork.PacketTypeGlobalChatResponse:
+		globalChatResponse(packet.(kfnetwork.GlobalChatResponsePacket))
 	}
 }
 
 func playerListResponse(packet kfnetwork.PlayerListResponsePacket) {
+	fmt.Println("")
 	for _, entry := range packet.Players {
 		fmt.Println("ID:", entry.ID, "Name:", entry.Name)
 	}
 
 	fmt.Println(packet.Count, "players online.")
+}
+
+func globalChatResponse(packet kfnetwork.GlobalChatResponsePacket) {
+	message := fmt.Sprintf("[Global Chat] %s: %s", packet.Name, packet.Message)
+	fmt.Println(message)
 }

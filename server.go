@@ -281,3 +281,14 @@ func (s *Server) SendPlayerListResponse(player *Player, list PlayerList) error {
 	e := WritePacket(player.Client, packet)
 	return e
 }
+
+func (s *Server) SendGlobalChatResponse(player *Player, name, message string) error {
+	packet := GlobalChatResponsePacket{}
+	packet.Type = PacketTypeGlobalChatResponse
+	packet.Sequence = 0
+	packet.Name = name
+	packet.Message = message
+
+	e := WritePacket(player.Client, packet)
+	return e
+}

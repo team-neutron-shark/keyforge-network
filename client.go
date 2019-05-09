@@ -91,6 +91,17 @@ func (c *Client) SendPlayerListRequest() error {
 	return e
 }
 
+func (c *Client) SendGlobalChatRequest(message string) error {
+	packet := GlobalChatRequestPacket{}
+	packet.Sequence = c.Sequence
+	packet.Type = PacketTypeGlobalChatRequest
+	packet.Message = message
+
+	e := WritePacket(c.Connection, packet)
+	c.Sequence++
+	return e
+}
+
 func (c *Client) SendGetArchivePile() {
 	c.SendGetCardPile(CardPileArchive)
 }

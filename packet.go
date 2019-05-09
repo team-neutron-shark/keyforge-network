@@ -93,6 +93,16 @@ type LobbyChatResponsePacket struct {
 	Message string `json:"message"`
 }
 
+type GlobalChatRequestPacket struct {
+	PacketHeader
+	Message string `json:"message"`
+}
+
+type GlobalChatResponsePacket struct {
+	PacketHeader
+	Name    string `json:"name"`
+	Message string `json:"message"`
+}
 type LobbyBanRequestPacket struct {
 	PacketHeader
 	Target string `json:"target"`
@@ -221,6 +231,22 @@ func (p PlayerListResponsePacket) GetPayload() ([]byte, error) {
 }
 
 func (p PlayerListResponsePacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p GlobalChatRequestPacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p GlobalChatRequestPacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p GlobalChatResponsePacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p GlobalChatResponsePacket) GetHeader() PacketHeader {
 	return p.PacketHeader
 }
 
@@ -490,6 +516,14 @@ func RenderPacket(header PacketHeader, payload []byte) (Packet, error) {
 		return packet, e
 	case PacketTypeLoginResponse:
 		packet := LoginResponsePacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeGlobalChatRequest:
+		packet := GlobalChatRequestPacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypeGlobalChatResponse:
+		packet := GlobalChatResponsePacket{}
 		e := json.Unmarshal(payload, &packet)
 		return packet, e
 	case PacketTypePlayerListRequest:
