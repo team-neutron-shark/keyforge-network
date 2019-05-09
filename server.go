@@ -134,6 +134,16 @@ func (s *Server) FindLobbyByID(id string) (*Lobby, error) {
 	return &Lobby{}, errors.New("no lobby found with the given ID")
 }
 
+func (s *Server) FindLobbyByName(name string) (*Lobby, error) {
+	for _, lobby := range s.Lobbies {
+		if lobby.name == name {
+			return lobby, nil
+		}
+	}
+
+	return &Lobby{}, errors.New("no lobby found with the given ID")
+}
+
 // HandleConnection - Process incoming connections after being accepted.
 func (s *Server) HandleConnection(client net.Conn) {
 	s.ClientMutex.Lock()
@@ -299,6 +309,18 @@ func (s *Server) SendGlobalChatResponse(player *Player, name, message string) er
 	packet.Sequence = 0
 	packet.Name = name
 	packet.Message = message
+
+	e := WritePacket(player.Client, packet)
+	return e
+}
+
+func (s *Server) SendJoinLobbyResponse(player *Player, name, id string, success bool) error {
+	packet := JoinLobbyResponsePacket{}
+	packet.Type = PacketTypeJoinLobbyResponse
+	packet.Sequence = 0
+	packet.Name = name
+	packet.ID = id
+	packet.Success = success
 
 	e := WritePacket(player.Client, packet)
 	return e

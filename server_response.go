@@ -1,6 +1,7 @@
 package kfnetwork
 
 import (
+	"errors"
 	"fmt"
 	"net"
 )
@@ -17,6 +18,8 @@ func (s *Server) HandlePacket(client net.Conn, packet Packet) {
 		s.HandlePlayerListRequest(client, packet.(PlayerListRequestPacket))
 	case PacketTypeCreateLobbyRequest:
 		s.HandleCreateLobbyRequest(client, packet.(CreateLobbyRequestPacket))
+	case PacketTypeLobbyListRequest:
+		s.HandleLobbyListRequest(client, packet.(LobbyListRequestPacket))
 	}
 }
 
@@ -151,4 +154,30 @@ func (s *Server) HandleLobbyListRequest(client net.Conn, packet LobbyListRequest
 	logEntry := fmt.Sprintf("Player %s requested a lobby list.", player.Name)
 	s.Log(logEntry)
 	return nil
+}
+
+func (s *Server) HandleJoinLobbyRequest(client net.Conn, packet JoinLobbyRequestPacket) error {
+	player, e := s.FindPlayerByConnection(client)
+
+	if e != nil {
+		return e
+	}
+
+	lobby, e := s.FindLobbyByID(packet.ID)
+
+	if e == nil {
+		lobby.AddPlayer(player)
+		s.SendJoinLobbyResponse(player, lobby.name, lobby.ID(), true)
+		return nil
+	}
+
+	lobby, e = s.FindLobbyByName(packet.Name)
+
+	if e == nil {
+		lobby.AddPlayer(player)
+		s.SendJoinLobbyResponse(player, lobby.name, lobby.ID(), true)
+		return nil
+	}
+
+	return errors.New("no lobby found")
 }

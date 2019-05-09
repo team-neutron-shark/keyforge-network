@@ -102,6 +102,26 @@ func (c *Client) SendGlobalChatRequest(message string) error {
 	return e
 }
 
+func (c *Client) SendLobbyListRequest() error {
+	packet := LobbyListRequestPacket{}
+	packet.Sequence = c.Sequence
+	packet.Type = PacketTypeLobbyListRequest
+
+	e := WritePacket(c.Connection, packet)
+	c.Sequence++
+	return e
+}
+
+func (c *Client) SendJoinLobbyRequest() error {
+	packet := JoinLobbyRequestPacket{}
+	packet.Sequence = c.Sequence
+	packet.Type = PacketTypeJoinLobbyRequest
+
+	e := WritePacket(c.Connection, packet)
+	c.Sequence++
+	return e
+}
+
 func (c *Client) SendGetArchivePile() {
 	c.SendGetCardPile(CardPileArchive)
 }

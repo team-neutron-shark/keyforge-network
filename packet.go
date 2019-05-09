@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net"
 )
 
@@ -74,12 +73,14 @@ type LobbyListResponsePacket struct {
 
 type JoinLobbyRequestPacket struct {
 	PacketHeader
-	ID string `json:"id"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type JoinLobbyResponsePacket struct {
 	PacketHeader
 	ID      string `json:"id"`
+	Name    string `json:"name"`
 	Success bool   `json:"success"`
 }
 
@@ -258,7 +259,6 @@ func WritePacket(client net.Conn, packet Packet) error {
 	payload := []byte{}
 	header := packet.GetHeader()
 	jsonPayload, e := GetPacketPayload(packet)
-	fmt.Println("WritePacket:", string(jsonPayload))
 
 	if e != nil {
 		return e
