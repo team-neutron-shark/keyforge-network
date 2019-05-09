@@ -23,7 +23,9 @@ func main() {
 			fmt.Println(e)
 		}
 
-		sanitized := strings.TrimSuffix(input, "\n")
+		sanitized := strings.Trim(input, "\n")
+		sanitized = strings.Trim(sanitized, "\r")
+
 		parts := strings.Split(sanitized, " ")
 		command := parts[0]
 		args := parts[1:]
@@ -50,12 +52,18 @@ func routeCommand(command string, args []string) {
 		login(args)
 	case "lobby":
 		createLobby(args)
+	case "who":
+		who()
 	default:
 		fmt.Println("Command not found.")
 	}
 }
 
 func connect(args []string) error {
+	if connected {
+		return errors.New("already connected")
+	}
+
 	if len(args) < 1 {
 		return errors.New("not enough arguments provided")
 	}
@@ -70,6 +78,8 @@ func connect(args []string) error {
 
 	fmt.Println("Connected to server at address", args[0])
 	connected = true
+
+	go readLoop()
 	return nil
 }
 
@@ -107,7 +117,40 @@ func createLobby(args []string) {
 	client.SendCreateLobbyRequest(name)
 }
 
+func who() {
+	client.SendPlayerListRequest()
+}
+
 func quit() {
 	fmt.Println("Quitting.")
 	os.Exit(0)
+}
+
+func readLoop() {
+	for {
+		packet, e := kfnetwork.ReadPacket(client.Connection)
+
+		if e != nil {
+			logEntry := fmt.Sprintf("ReadPacket: %s", e.Error())
+			fmt.Println(logEntry)
+			return
+		}
+
+		handlePacket(packet)
+	}
+}
+
+func handlePacket(packet kfnetwork.Packet) {
+	switch packet.GetHeader().Type {
+	case kfnetwork.PacketTypePlayerListResponse:
+		playerListResponse(packet.(kfnetwork.PlayerListResponsePacket))
+	}
+}
+
+func playerListResponse(packet kfnetwork.PlayerListResponsePacket) {
+	for _, entry := range packet.Players {
+		fmt.Println("ID:", entry.ID, "Name:", entry.Name)
+	}
+
+	fmt.Println(packet.Count, "players online.")
 }

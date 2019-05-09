@@ -49,6 +49,14 @@ func (l *Lobby) ID() string {
 	return l.id
 }
 
+func (l *Lobby) Name() string {
+	return l.name
+}
+
+func (l *Lobby) SetName(name string) {
+	l.name = name
+}
+
 func (l *Lobby) SetID(id string) {
 	l.id = id
 }

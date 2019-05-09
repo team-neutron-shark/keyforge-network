@@ -13,6 +13,10 @@ const (
 	PacketTypeVersionResponse
 	PacketTypeLoginRequest
 	PacketTypeLoginResponse
+	PacketTypePlayerListRequest
+	PacketTypePlayerListResponse
+	PacketTypeGlobalChatRequest
+	PacketTypeGlobalChatResponse
 	PacketTypeCreateLobbyRequest
 	PacketTypeCreateLobbyResponse
 	PacketTypeJoinLobbyRequest

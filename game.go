@@ -61,6 +61,16 @@ const (
 	UpgradeAffectDestroyMostPowerfulCreature
 )
 
+type PlayerListEntry struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type PlayerList struct {
+	Count   uint              `json:"count"`
+	Players []PlayerListEntry `json:"players"`
+}
+
 type Game struct {
 	Seed    int64
 	Turn    int

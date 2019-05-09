@@ -81,6 +81,16 @@ func (c *Client) SendGetCardPile(pile uint8) error {
 	return e
 }
 
+func (c *Client) SendPlayerListRequest() error {
+	packet := PlayerListRequestPacket{}
+	packet.Sequence = c.Sequence
+	packet.Type = PacketTypePlayerListRequest
+
+	e := WritePacket(c.Connection, packet)
+	c.Sequence++
+	return e
+}
+
 func (c *Client) SendGetArchivePile() {
 	c.SendGetCardPile(CardPileArchive)
 }

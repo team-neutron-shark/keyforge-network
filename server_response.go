@@ -11,6 +11,8 @@ func (s *Server) HandlePacket(client net.Conn, packet Packet) {
 		s.HandleVersionRequest(client, packet.(VersionPacket))
 	case PacketTypeLoginRequest:
 		s.HandleLoginRequest(client, packet.(LoginRequestPacket))
+	case PacketTypePlayerListRequest:
+		s.HandlePlayerListRequest(client, packet.(PlayerListRequestPacket))
 	case PacketTypeCreateLobbyRequest:
 		s.HandleCreateLobbyRequest(client, packet.(CreateLobbyRequestPacket))
 	}
@@ -73,5 +75,39 @@ func (s *Server) HandleCreateLobbyRequest(client net.Conn, packet CreateLobbyReq
 }
 
 func (s *Server) HandleLobbyChatRequest(client net.Conn, packet LobbyChatRequestPacket) error {
+	return nil
+}
+
+func (s *Server) HandlePlayerListRequest(client net.Conn, packet PlayerListRequestPacket) error {
+	player, e := s.FindPlayerByConnection(client)
+
+	if e != nil {
+		if s.Debug {
+			logEntry := fmt.Sprintf("HandlePlayerListRequest: %s", e.Error())
+			s.Log(logEntry)
+		}
+		return e
+	}
+
+	playerList := PlayerList{}
+
+	for _, p := range s.Clients {
+		entry := PlayerListEntry{}
+		entry.ID = p.ID
+		entry.Name = p.Name
+
+		playerList.Players = append(playerList.Players, entry)
+	}
+
+	playerList.Count = uint(len(playerList.Players))
+
+	e = s.SendPlayerListResponse(player, playerList)
+
+	if e != nil {
+		return e
+	}
+
+	logEntry := fmt.Sprintf("Player %s requested the player list", player.Name)
+	s.Log(logEntry)
 	return nil
 }

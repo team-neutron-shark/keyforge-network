@@ -105,7 +105,7 @@ func (s *Server) AddLobby(creator *Player, name string) *Lobby {
 	lobby.SetID(GenerateUUID())
 	lobby.AddPlayer(creator)
 	lobby.SetHost(creator)
-	lobby.name = name
+	lobby.SetName(name)
 
 	s.Lobbies = append(s.Lobbies, lobby)
 
@@ -178,6 +178,10 @@ func (s *Server) ReadLoop(client net.Conn) {
 		if e != nil {
 			logEntry := fmt.Sprintf("ReadPacket: %s", e.Error())
 			s.Log(logEntry)
+			player, e := s.FindPlayerByConnection(client)
+			if e == nil {
+				s.RemovePlayer(player)
+			}
 			s.CloseConnection(client)
 			return
 		}
@@ -262,6 +266,17 @@ func (s *Server) SendCreateLobbyResponse(player *Player, id string) error {
 	packet.Type = PacketTypeCreateLobbyResponse
 	packet.Sequence = 0
 	packet.ID = id
+
+	e := WritePacket(player.Client, packet)
+	return e
+}
+
+func (s *Server) SendPlayerListResponse(player *Player, list PlayerList) error {
+	packet := PlayerListResponsePacket{}
+	packet.Type = PacketTypePlayerListResponse
+	packet.Sequence = 0
+	packet.Count = list.Count
+	packet.Players = list.Players
 
 	e := WritePacket(player.Client, packet)
 	return e

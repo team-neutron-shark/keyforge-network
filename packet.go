@@ -43,6 +43,15 @@ type LoginResponsePacket struct {
 	PacketHeader
 }
 
+type PlayerListRequestPacket struct {
+	PacketHeader
+}
+
+type PlayerListResponsePacket struct {
+	PacketHeader
+	PlayerList
+}
+
 type CreateLobbyRequestPacket struct {
 	PacketHeader
 	Name string `json:"name"`
@@ -196,6 +205,22 @@ func (p LoginResponsePacket) GetPayload() ([]byte, error) {
 }
 
 func (p LoginResponsePacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p PlayerListRequestPacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p PlayerListRequestPacket) GetHeader() PacketHeader {
+	return p.PacketHeader
+}
+
+func (p PlayerListResponsePacket) GetPayload() ([]byte, error) {
+	return json.Marshal(p)
+}
+
+func (p PlayerListResponsePacket) GetHeader() PacketHeader {
 	return p.PacketHeader
 }
 
@@ -465,6 +490,14 @@ func RenderPacket(header PacketHeader, payload []byte) (Packet, error) {
 		return packet, e
 	case PacketTypeLoginResponse:
 		packet := LoginResponsePacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypePlayerListRequest:
+		packet := PlayerListRequestPacket{}
+		e := json.Unmarshal(payload, &packet)
+		return packet, e
+	case PacketTypePlayerListResponse:
+		packet := PlayerListResponsePacket{}
 		e := json.Unmarshal(payload, &packet)
 		return packet, e
 	case PacketTypeCreateLobbyRequest:
