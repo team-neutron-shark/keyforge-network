@@ -2,7 +2,6 @@ package kfnetwork
 
 import (
 	"fmt"
-	keyforge "keyforge/game"
 	"net"
 	"sync"
 )
@@ -64,7 +63,7 @@ func (p *Player) RemoveAffect(affect *PlayerAffect) {
 	p.affects = returnAffects
 }
 
-func (p *Player) FindAffectByCard(card *keyforge.Card) []*PlayerAffect {
+func (p *Player) FindAffectByCard(card *Card) []*PlayerAffect {
 	foundAffects := []*PlayerAffect{}
 
 	for _, affect := range p.affects {

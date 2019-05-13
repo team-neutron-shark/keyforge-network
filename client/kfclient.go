@@ -54,8 +54,12 @@ func routeCommand(command string, args []string) {
 		global(args)
 	case "lobby":
 		createLobby(args)
+	case "lobbies":
+		listLobbies()
 	case "who":
 		who()
+	case "join":
+		join(args)
 	default:
 		fmt.Println("Command not found.")
 	}
@@ -146,6 +150,18 @@ func global(args []string) {
 	client.SendGlobalChatRequest(message)
 }
 
+func listLobbies() {
+	client.SendLobbyListRequest()
+}
+
+func join(args []string) {
+	if len(args) < 1 {
+		return
+	}
+
+	client.SendJoinLobbyRequest(args[1])
+}
+
 func readLoop() {
 	for {
 		packet, e := kfnetwork.ReadPacket(client.Connection)
@@ -166,19 +182,35 @@ func handlePacket(packet kfnetwork.Packet) {
 		playerListResponse(packet.(kfnetwork.PlayerListResponsePacket))
 	case kfnetwork.PacketTypeGlobalChatResponse:
 		globalChatResponse(packet.(kfnetwork.GlobalChatResponsePacket))
+	case kfnetwork.PacketTypeLobbyListResponse:
+		lobbyListResponse(packet.(kfnetwork.LobbyListResponsePacket))
+	case kfnetwork.PacketTypeJoinLobbyResponse:
+		joinLobbyResponse(packet.(kfnetwork.JoinLobbyResponsePacket))
 	}
 }
 
 func playerListResponse(packet kfnetwork.PlayerListResponsePacket) {
-	fmt.Println("")
 	for _, entry := range packet.Players {
 		fmt.Println("ID:", entry.ID, "Name:", entry.Name)
 	}
 
-	fmt.Println(packet.Count, "players online.")
+	fmt.Println(packet.Count, "players online.\n")
 }
 
 func globalChatResponse(packet kfnetwork.GlobalChatResponsePacket) {
-	message := fmt.Sprintf("[Global Chat] %s: %s", packet.Name, packet.Message)
+	message := fmt.Sprintf("[Global Chat] %s: %s\n", packet.Name, packet.Message)
 	fmt.Println(message)
+}
+
+func lobbyListResponse(packet kfnetwork.LobbyListResponsePacket) {
+	fmt.Println("Lobbies")
+	fmt.Println("-------")
+	for _, entry := range packet.Lobbies {
+		logEntry := fmt.Sprintf("(%s) %s", entry.ID, entry.Name)
+		fmt.Println(logEntry)
+	}
+}
+
+func joinLobbyResponse(packet kfnetwork.JoinLobbyResponsePacket) {
+	fmt.Println("You have joined %s\n", packet.Name)
 }

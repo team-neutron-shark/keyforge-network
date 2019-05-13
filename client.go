@@ -112,10 +112,11 @@ func (c *Client) SendLobbyListRequest() error {
 	return e
 }
 
-func (c *Client) SendJoinLobbyRequest() error {
+func (c *Client) SendJoinLobbyRequest(query string) error {
 	packet := JoinLobbyRequestPacket{}
 	packet.Sequence = c.Sequence
 	packet.Type = PacketTypeJoinLobbyRequest
+	packet.Name = query
 
 	e := WritePacket(c.Connection, packet)
 	c.Sequence++

@@ -1,20 +1,16 @@
 package kfnetwork
 
-import (
-	keyforge "keyforge/game"
-)
-
 type Affect interface {
 	Duration() uint
 	Type() uint
-	Card() *keyforge.Card
+	Card() *Card
 	IsPermanent() bool
 }
 
 type PlayerAffect struct {
 	duration     uint
 	affectType   uint
-	card         *keyforge.Card
+	card         *Card
 	permanent    bool
 	buffAmount   uint
 	debuffAmount uint
@@ -33,7 +29,7 @@ func (p *PlayerAffect) Type() uint {
 	return p.affectType
 }
 
-func (p *PlayerAffect) Card() *keyforge.Card {
+func (p *PlayerAffect) Card() *Card {
 	return p.card
 }
 
@@ -49,7 +45,7 @@ func (p *PlayerAffect) SetType(t uint) {
 	p.affectType = t
 }
 
-func (p *PlayerAffect) SetCard(c *keyforge.Card) {
+func (p *PlayerAffect) SetCard(c *Card) {
 	p.card = c
 }
 
