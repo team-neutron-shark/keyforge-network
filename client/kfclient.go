@@ -4,10 +4,11 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	kfnetwork "keyforge-network"
-	"keyforge-network/vault"
 	"os"
 	"strings"
+
+	kfnetwork "github.com/team-neutron-shark/keyforge-network"
+	"github.com/team-neutron-shark/keyforge-network/vault"
 )
 
 var client *kfnetwork.Client
