@@ -18,6 +18,10 @@ type Credentials struct {
 	APIToken    string `json:"-"`
 }
 
+type VaultUserResult struct {
+	Data VaultUser `json:"data"`
+}
+
 type VaultUser struct {
 	ID                   string `json:"id"`
 	UserName             string `json:"username"`
@@ -303,4 +307,31 @@ func RetrieveDeck(vaultUser *VaultUser, deckID string) (keyforge.Deck, error) {
 	}
 
 	return newDeck, nil
+}
+
+func RetrieveProfile(authToken string) (VaultUser, error) {
+	client := &http.Client{}
+	user := VaultUserResult{}
+	path := "https://www.keyforgegame.com/api/users/self"
+	authHeader := fmt.Sprintf("Token %s", authToken)
+
+	request, e := http.NewRequest("GET", path, nil)
+	request.Header.Add("Authorization", authHeader)
+
+	if e != nil {
+		return user.Data, e
+	}
+
+	response, e := client.Do(request)
+
+	body, e := ioutil.ReadAll(response.Body)
+	defer response.Body.Close()
+
+	e = json.Unmarshal(body, &user)
+
+	if e != nil {
+		return user.Data, e
+	}
+
+	return user.Data, nil
 }

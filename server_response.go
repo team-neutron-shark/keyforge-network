@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"net"
+
+	"github.com/team-neutron-shark/keyforge-network/vault"
 )
 
 func (s *Server) HandlePacket(client net.Conn, packet Packet) {
@@ -36,14 +38,26 @@ func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) {
 	}
 }
 
-func (s *Server) HandleLoginRequest(client net.Conn, packet LoginRequestPacket) {
-	//TODO - add authentication logic; for now assume login succeeds
+func (s *Server) HandleLoginRequest(client net.Conn, packet LoginRequestPacket) error {
+	vaultUser, e := vault.RetrieveProfile(packet.Token)
+
+	if e != nil {
+		return e
+	}
+
+	if vaultUser.ID != packet.ID {
+		s.SendErrorPacket(client, "Login failed.")
+		s.CloseConnection(client)
+		return errors.New("incorrect user ID supplied in packet")
+	}
+
 	player := NewPlayer()
 	player.Name = packet.Name
 	player.ID = packet.ID
 	player.Client = client
 
 	s.AddPlayer(player)
+	return nil
 }
 
 func (s *Server) HandleExitRequest(client net.Conn, packet ExitPacket) error {
