@@ -335,3 +335,30 @@ func RetrieveProfile(authToken string) (VaultUser, error) {
 
 	return user.Data, nil
 }
+
+func RetrieveDecksFromProfile(vaultUser *VaultUser) (PartialDeckSearchJSON, error) {
+	client := &http.Client{}
+	path := fmt.Sprintf("https://www.keyforgegame.com/api/users/%s/decks", vaultUser.ID)
+	authHeader = fmt.Sprintf("Token %s", vaultUser.Token)
+	partialDeckJSON := PartialDeckSearchJSON{}
+
+	request, e := http.NewRequest("GET", path, nil)
+	request.Header.Add("Authorization", authHeader)
+
+	if e != nil {
+		return partialDeckJSON, e
+	}
+
+	response, e := client.Do(request)
+
+	body, e := ioutil.ReadAll(response.Body)
+	defer response.Body.Close()
+
+	e = json.Unmarshal(body, &partialDeckJSON)
+
+	if e != nil {
+		return partialDeckJSON, e
+	}
+
+	return partialDeckJSON, nil
+}
