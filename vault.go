@@ -1,4 +1,4 @@
-package vault
+package kfnetwork
 
 import (
 	"bytes"
@@ -339,7 +339,7 @@ func RetrieveProfile(authToken string) (VaultUser, error) {
 func RetrieveDecksFromProfile(vaultUser *VaultUser) (PartialDeckSearchJSON, error) {
 	client := &http.Client{}
 	path := fmt.Sprintf("https://www.keyforgegame.com/api/users/%s/decks", vaultUser.ID)
-	authHeader = fmt.Sprintf("Token %s", vaultUser.Token)
+	authHeader := fmt.Sprintf("Token %s", vaultUser.Token)
 	partialDeckJSON := PartialDeckSearchJSON{}
 
 	request, e := http.NewRequest("GET", path, nil)
