@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	keyforge "keyforge-network"
 	"net/http"
 	"net/url"
 	"strconv"

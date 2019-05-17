@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net"
-
-	"github.com/team-neutron-shark/keyforge-network/vault"
 )
 
 func (s *Server) HandlePacket(client net.Conn, packet Packet) {
@@ -22,6 +20,10 @@ func (s *Server) HandlePacket(client net.Conn, packet Packet) {
 		s.HandleCreateLobbyRequest(client, packet.(CreateLobbyRequestPacket))
 	case PacketTypeLobbyListRequest:
 		s.HandleLobbyListRequest(client, packet.(LobbyListRequestPacket))
+	case PacketTypeJoinLobbyRequest:
+		s.HandleJoinLobbyRequest(client, packet.(JoinLobbyRequestPacket))
+	case PacketTypeLeaveLobbyRequest:
+		s.HandleLeaveLobbyRequest(client, packet.(LeaveLobbyRequestPacket))
 	}
 }
 
@@ -39,7 +41,7 @@ func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) {
 }
 
 func (s *Server) HandleLoginRequest(client net.Conn, packet LoginRequestPacket) error {
-	vaultUser, e := vault.RetrieveProfile(packet.Token)
+	vaultUser, e := RetrieveProfile(packet.Token)
 
 	if e != nil {
 		return e
@@ -181,7 +183,10 @@ func (s *Server) HandleJoinLobbyRequest(client net.Conn, packet JoinLobbyRequest
 
 	if e == nil {
 		lobby.AddPlayer(player)
-		s.SendJoinLobbyResponse(player, lobby.name, lobby.ID(), true)
+
+		for _, p := range lobby.Players() {
+			s.SendJoinLobbyResponse(p, lobby.name, lobby.ID(), true)
+		}
 		return nil
 	}
 
@@ -189,9 +194,50 @@ func (s *Server) HandleJoinLobbyRequest(client net.Conn, packet JoinLobbyRequest
 
 	if e == nil {
 		lobby.AddPlayer(player)
-		s.SendJoinLobbyResponse(player, lobby.name, lobby.ID(), true)
+
+		for _, p := range lobby.Players() {
+			s.SendJoinLobbyResponse(p, lobby.name, lobby.ID(), true)
+		}
 		return nil
 	}
 
-	return errors.New("no lobby found")
+	return errors.New("no such lobby found")
+}
+
+func (s *Server) HandleLeaveLobbyRequest(client net.Conn, packet LeaveLobbyRequestPacket) error {
+	player, e := s.FindPlayerByConnection(client)
+
+	if e != nil {
+		return e
+	}
+
+	if !s.PlayerHasLobby(player) {
+		return errors.New("player is not in a lobby")
+	}
+
+	lobby, e := s.FindLobbyByID(packet.ID)
+
+	if e == nil {
+		lobby.RemovePlayer(player)
+
+		for _, p := range lobby.Players() {
+			s.SendLeaveLobbyResponse(p, lobby.name, lobby.ID(), true)
+		}
+
+		return nil
+	}
+
+	lobby, e = s.FindLobbyByName(packet.Name)
+
+	if e == nil {
+		lobby.RemovePlayer(player)
+
+		for _, p := range lobby.Players() {
+			s.SendLeaveLobbyResponse(p, lobby.name, lobby.ID(), true)
+		}
+
+		return nil
+	}
+
+	return errors.New("no such lobby found")
 }
