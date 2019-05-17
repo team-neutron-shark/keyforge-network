@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	kfnetwork "github.com/team-neutron-shark/keyforge-network"
-	"github.com/team-neutron-shark/keyforge-network/vault"
 )
 
 var client *kfnetwork.Client
@@ -103,7 +102,7 @@ func login(args []string) error {
 	username := args[0]
 	password := args[1]
 
-	user, e := vault.Login(username, password)
+	user, e := Login(username, password)
 
 	if e != nil {
 		return e

@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net"
-
-	"github.com/team-neutron-shark/keyforge-network/vault"
 )
 
 func (s *Server) HandlePacket(client net.Conn, packet Packet) {
@@ -39,7 +37,7 @@ func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) {
 }
 
 func (s *Server) HandleLoginRequest(client net.Conn, packet LoginRequestPacket) error {
-	vaultUser, e := vault.RetrieveProfile(packet.Token)
+	vaultUser, e := RetrieveProfile(packet.Token)
 
 	if e != nil {
 		return e
