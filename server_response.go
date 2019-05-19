@@ -24,6 +24,10 @@ func (s *Server) HandlePacket(client net.Conn, packet Packet) {
 		s.HandleJoinLobbyRequest(client, packet.(JoinLobbyRequestPacket))
 	case PacketTypeLeaveLobbyRequest:
 		s.HandleLeaveLobbyRequest(client, packet.(LeaveLobbyRequestPacket))
+	case PacketTypeKickLobbyRequest:
+		s.HandleLobbyKickRequest(client, packet.(LobbyKickRequestPacket))
+	case PacketTypeLobbyChatRequest:
+		s.HandleLobbyChatRequest(client, packet.(LobbyChatRequestPacket))
 	}
 }
 
@@ -138,6 +142,25 @@ func (s *Server) HandlePlayerListRequest(client net.Conn, packet PlayerListReque
 }
 
 func (s *Server) HandleLobbyChatRequest(client net.Conn, packet LobbyChatRequestPacket) error {
+	player, e := s.FindPlayerByConnection(client)
+
+	if e != nil {
+		return e
+	}
+
+	lobby, e := s.FindLobbyByPlayer(player)
+
+	if e != nil {
+		return e
+	}
+
+	for _, p := range lobby.Players() {
+		p.Lock()
+		defer p.Unlock()
+
+		s.SendLobbyChatResponse(p, player.Name, packet.Message)
+	}
+
 	return nil
 }
 
