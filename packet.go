@@ -12,9 +12,9 @@ type Packet interface {
 }
 
 type PacketHeader struct {
-	Sequence uint16 `json:"sequence"`
-	Type     uint16 `json:"type"`
-	Length   uint16 `json:"-"`
+	//Sequence uint16 `json:"sequence"`
+	Type   uint16 `json:"type"`
+	Length uint16 `json:"-"`
 }
 
 type VersionPacket struct {
