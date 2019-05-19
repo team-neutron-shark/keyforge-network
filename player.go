@@ -10,7 +10,6 @@ type Player struct {
 	Active      bool
 	ID          string
 	playerMutex sync.Mutex
-	affectMutex sync.Mutex
 	affects     []*PlayerAffect
 	Client      net.Conn
 	Name        string
@@ -61,9 +60,10 @@ func (p *Player) Affects() []*PlayerAffect {
 
 // AddAffect - Add an affect to the affects array.
 func (p *Player) AddAffect(affect *PlayerAffect) {
-
 	if !p.HasAffect(affect) {
+		affect.Lock()
 		p.affects = append(p.affects, affect)
+		affect.Unlock()
 	}
 }
 
@@ -71,11 +71,14 @@ func (p *Player) AddAffect(affect *PlayerAffect) {
 func (p *Player) RemoveAffect(affect *PlayerAffect) {
 	returnAffects := []*PlayerAffect{}
 
+	affect.Lock()
 	for _, a := range p.affects {
+
 		if a != affect {
 			returnAffects = append(returnAffects, a)
 		}
 	}
+	affect.Unlock()
 
 	p.affects = returnAffects
 }
@@ -84,14 +87,13 @@ func (p *Player) RemoveAffect(affect *PlayerAffect) {
 func (p *Player) FindAffectByCard(card *Card) []*PlayerAffect {
 	foundAffects := []*PlayerAffect{}
 
-	p.affectMutex.Lock()
 	for _, affect := range p.affects {
+		affect.Lock()
 		if affect.Card() == card {
 			foundAffects = append(foundAffects, affect)
 		}
+		affect.Unlock()
 	}
-	p.affectMutex.Unlock()
-
 	return foundAffects
 }
 
@@ -99,9 +101,11 @@ func (p *Player) FindAffectByCard(card *Card) []*PlayerAffect {
 // given an affect pointer.
 func (p *Player) HasAffect(affect *PlayerAffect) bool {
 	for _, a := range p.affects {
+		a.Lock()
 		if a == affect {
 			return true
 		}
+		a.Unlock()
 	}
 
 	return false
