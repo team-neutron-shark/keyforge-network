@@ -14,6 +14,7 @@
   - [x] Lobby kick
   - [x] Lobby chat
   - [ ] Select deck
+  - [ ] Start game
 * Social
   - [x] Global chat
 * Vault API
