@@ -1,4 +1,5 @@
-package vault
+
+package kfnetwork
 
 import (
 	"bytes"
@@ -86,9 +87,9 @@ type RetrieveDeckJSON struct {
 }
 
 type DeckLinkJSON struct {
-	Houses []HouseJSON     `json:"houses"`
-	Cards  []keyforge.Card `json:"cards"`
-	Notes  []string        `json:"notes"`
+	Houses []HouseJSON `json:"houses"`
+	Cards  []Card      `json:"cards"`
+	Notes  []string    `json:"notes"`
 }
 
 type HouseJSON struct {
@@ -256,8 +257,8 @@ func SearchDecks(vaultUser *VaultUser, deckQuery *DeckQuery) (PartialDeckSearchJ
 	return result, nil
 }
 
-func RetrieveDeck(vaultUser *VaultUser, deckID string) (keyforge.Deck, error) {
-	newDeck := keyforge.Deck{}
+func RetrieveDeck(vaultUser *VaultUser, deckID string) (Deck, error) {
+	newDeck := Deck{}
 	client := &http.Client{}
 	deckJSON := RetrieveDeckJSON{}
 	authHeader := fmt.Sprintf("Token %s", vaultUser.Token)
@@ -267,7 +268,7 @@ func RetrieveDeck(vaultUser *VaultUser, deckID string) (keyforge.Deck, error) {
 	request.Header.Add("Authorization", authHeader)
 
 	if e != nil {
-		return keyforge.Deck{}, e
+		return Deck{}, e
 	}
 
 	response, e := client.Do(request)
@@ -278,7 +279,7 @@ func RetrieveDeck(vaultUser *VaultUser, deckID string) (keyforge.Deck, error) {
 	e = json.Unmarshal(body, &deckJSON)
 
 	if e != nil {
-		return keyforge.Deck{}, e
+		return Deck{}, e
 	}
 
 	newDeck.CasualLosses = deckJSON.Deck.CasualLosses
@@ -338,7 +339,7 @@ func RetrieveProfile(authToken string) (VaultUser, error) {
 func RetrieveDecksFromProfile(vaultUser *VaultUser) (PartialDeckSearchJSON, error) {
 	client := &http.Client{}
 	path := fmt.Sprintf("https://www.keyforgegame.com/api/users/%s/decks", vaultUser.ID)
-	authHeader = fmt.Sprintf("Token %s", vaultUser.Token)
+	authHeader := fmt.Sprintf("Token %s", vaultUser.Token)
 	partialDeckJSON := PartialDeckSearchJSON{}
 
 	request, e := http.NewRequest("GET", path, nil)
