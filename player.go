@@ -53,7 +53,7 @@ func (p *Player) Unlock() {
 	p.playerMutex.Unlock()
 }
 
-// AfFects - this function returns an array of PlayerAffect pointers
+// Affects - this function returns an array of PlayerAffect pointers
 // and is basically used to allow outside access to other functions.
 func (p *Player) Affects() []*PlayerAffect {
 	return p.affects
