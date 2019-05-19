@@ -9,6 +9,7 @@ import (
 type Player struct {
 	Active      bool
 	ID          string
+	playerMutex sync.Mutex
 	affectMutex sync.Mutex
 	affects     []*PlayerAffect
 	Client      net.Conn
@@ -40,6 +41,14 @@ func NewPlayer() *Player {
 	return player
 }
 
+func (p *Player) Lock() {
+	p.playerMutex.Lock()
+}
+
+func (p *Player) Unlock() {
+	p.playerMutex.Unlock()
+}
+
 func (p *Player) Affects() []*PlayerAffect {
 	return p.affects
 }
@@ -66,13 +75,13 @@ func (p *Player) RemoveAffect(affect *PlayerAffect) {
 func (p *Player) FindAffectByCard(card *Card) []*PlayerAffect {
 	foundAffects := []*PlayerAffect{}
 
+	p.affectMutex.Lock()
 	for _, affect := range p.affects {
 		if affect.Card() == card {
-			p.affectMutex.Lock()
 			foundAffects = append(foundAffects, affect)
-			p.affectMutex.Unlock()
 		}
 	}
+	p.affectMutex.Unlock()
 
 	return foundAffects
 }
