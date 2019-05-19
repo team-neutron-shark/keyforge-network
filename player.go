@@ -41,18 +41,25 @@ func NewPlayer() *Player {
 	return player
 }
 
+// Lock - this function allows a goroutine to lock the player mutex in
+// order to use the player struct.
 func (p *Player) Lock() {
 	p.playerMutex.Lock()
 }
 
+// Unlock - this function allows a goroutine to unlock the player mutex
+// after using the player struct.
 func (p *Player) Unlock() {
 	p.playerMutex.Unlock()
 }
 
+// AfFects - this function returns an array of PlayerAffect pointers
+// and is basically used to allow outside access to other functions.
 func (p *Player) Affects() []*PlayerAffect {
 	return p.affects
 }
 
+// AddAffect - Add an affect to the affects array.
 func (p *Player) AddAffect(affect *PlayerAffect) {
 
 	if !p.HasAffect(affect) {
@@ -60,6 +67,7 @@ func (p *Player) AddAffect(affect *PlayerAffect) {
 	}
 }
 
+// RemoveAffect - Remove an affect from the affects array.
 func (p *Player) RemoveAffect(affect *PlayerAffect) {
 	returnAffects := []*PlayerAffect{}
 
@@ -72,6 +80,7 @@ func (p *Player) RemoveAffect(affect *PlayerAffect) {
 	p.affects = returnAffects
 }
 
+// FindAffectByCard - Locate a PlayerAffect given a pointer to a Card.
 func (p *Player) FindAffectByCard(card *Card) []*PlayerAffect {
 	foundAffects := []*PlayerAffect{}
 
@@ -86,6 +95,8 @@ func (p *Player) FindAffectByCard(card *Card) []*PlayerAffect {
 	return foundAffects
 }
 
+// HasAffect - Determine whether or not the affects array contains an affect
+// given an affect pointer.
 func (p *Player) HasAffect(affect *PlayerAffect) bool {
 	for _, a := range p.affects {
 		if a == affect {
