@@ -9,7 +9,7 @@ import (
 type Player struct {
 	Active      bool
 	ID          string
-	affectMutex sync.Mutex
+	playerMutex sync.Mutex
 	affects     []*PlayerAffect
 	Client      net.Conn
 	Name        string
@@ -40,48 +40,72 @@ func NewPlayer() *Player {
 	return player
 }
 
+// Lock - this function allows a goroutine to lock the player mutex in
+// order to use the player struct.
+func (p *Player) Lock() {
+	p.playerMutex.Lock()
+}
+
+// Unlock - this function allows a goroutine to unlock the player mutex
+// after using the player struct.
+func (p *Player) Unlock() {
+	p.playerMutex.Unlock()
+}
+
+// Affects - this function returns an array of PlayerAffect pointers
+// and is basically used to allow outside access to other functions.
 func (p *Player) Affects() []*PlayerAffect {
 	return p.affects
 }
 
+// AddAffect - Add an affect to the affects array.
 func (p *Player) AddAffect(affect *PlayerAffect) {
-
 	if !p.HasAffect(affect) {
+		affect.Lock()
 		p.affects = append(p.affects, affect)
+		affect.Unlock()
 	}
 }
 
+// RemoveAffect - Remove an affect from the affects array.
 func (p *Player) RemoveAffect(affect *PlayerAffect) {
 	returnAffects := []*PlayerAffect{}
 
+	affect.Lock()
 	for _, a := range p.affects {
+
 		if a != affect {
 			returnAffects = append(returnAffects, a)
 		}
 	}
+	affect.Unlock()
 
 	p.affects = returnAffects
 }
 
+// FindAffectByCard - Locate a PlayerAffect given a pointer to a Card.
 func (p *Player) FindAffectByCard(card *Card) []*PlayerAffect {
 	foundAffects := []*PlayerAffect{}
 
 	for _, affect := range p.affects {
+		affect.Lock()
 		if affect.Card() == card {
-			p.affectMutex.Lock()
 			foundAffects = append(foundAffects, affect)
-			p.affectMutex.Unlock()
 		}
+		affect.Unlock()
 	}
-
 	return foundAffects
 }
 
+// HasAffect - Determine whether or not the affects array contains an affect
+// given an affect pointer.
 func (p *Player) HasAffect(affect *PlayerAffect) bool {
 	for _, a := range p.affects {
+		a.Lock()
 		if a == affect {
 			return true
 		}
+		a.Unlock()
 	}
 
 	return false
