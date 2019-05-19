@@ -31,7 +31,7 @@ func (s *Server) HandlePacket(client net.Conn, packet Packet) {
 	}
 }
 
-func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) {
+func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) error {
 	debugString := fmt.Sprintf("HandleVersionPacket: %+v", packet)
 	s.Log(debugString)
 
@@ -43,7 +43,11 @@ func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) {
 
 		s.SendErrorPacket(client, "Protocol version mismatch.")
 		s.CloseConnection(client)
+		return errors.New("protocol version mismatch")
 	}
+
+	s.SendVersionResponse(client)
+	return nil
 }
 
 func (s *Server) HandleLoginRequest(client net.Conn, packet LoginRequestPacket) error {

@@ -298,6 +298,15 @@ func (s *Server) SendErrorPacket(client net.Conn, message string) error {
 	return e
 }
 
+func (s *Server) SendVersionResponse(client net.Conn) error {
+	packet := VersionPacket{}
+	packet.Type = PacketTypeVersionResponse
+	packet.Version = ProtocolVersion
+
+	e := WritePacket(client, packet)
+	return e
+}
+
 func (s *Server) SendCreateLobbyResponse(player *Player, id string) error {
 	packet := CreateLobbyResponsePacket{}
 	packet.Type = PacketTypeCreateLobbyResponse
