@@ -368,3 +368,13 @@ func (s *Server) SendLobbyKickResponse(player *Player, target string, success bo
 	e := WritePacket(player.Client, packet)
 	return e
 }
+
+func (s *Server) SendLobbyChatResponse(player *Player, name string, message string) error {
+	packet := LobbyChatResponsePacket{}
+	packet.Type = PacketTypeLobbyChatResponse
+	packet.Name = name
+	packet.Message = message
+
+	e := WritePacket(player.Client, packet)
+	return e
+}
