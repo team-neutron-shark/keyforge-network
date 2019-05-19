@@ -266,9 +266,31 @@ func (s *Server) PlayerHasLobby(player *Player) bool {
 	return false
 }
 
+func (s *Server) FindLobbyByPlayer(player *Player) (*Lobby, error) {
+	for _, lobby := range s.Lobbies {
+		if lobby.PlayerExists(player) {
+			return lobby, nil
+		}
+	}
+
+	return &Lobby{}, errors.New("no lobby found")
+}
+
+func (s *Server) FindPlayerByID(id string) (*Player, error) {
+	for _, player := range s.Clients {
+		player.Lock()
+		defer player.Unlock()
+
+		if player.ID == id {
+			return player, nil
+		}
+	}
+
+	return &Player{}, errors.New("no such player found")
+}
+
 func (s *Server) SendErrorPacket(client net.Conn, message string) error {
 	packet := ErrorPacket{}
-	packet.Sequence = 0
 	packet.Type = PacketTypeError
 	packet.Message = message
 
@@ -279,7 +301,6 @@ func (s *Server) SendErrorPacket(client net.Conn, message string) error {
 func (s *Server) SendCreateLobbyResponse(player *Player, id string) error {
 	packet := CreateLobbyResponsePacket{}
 	packet.Type = PacketTypeCreateLobbyResponse
-	packet.Sequence = 0
 	packet.ID = id
 
 	e := WritePacket(player.Client, packet)
@@ -289,7 +310,6 @@ func (s *Server) SendCreateLobbyResponse(player *Player, id string) error {
 func (s *Server) SendPlayerListResponse(player *Player, list PlayerList) error {
 	packet := PlayerListResponsePacket{}
 	packet.Type = PacketTypePlayerListResponse
-	packet.Sequence = 0
 	packet.Count = list.Count
 	packet.Players = list.Players
 
@@ -300,7 +320,6 @@ func (s *Server) SendPlayerListResponse(player *Player, list PlayerList) error {
 func (s *Server) SendLobbyListResponse(player *Player, list LobbyList) error {
 	packet := LobbyListResponsePacket{}
 	packet.Type = PacketTypeLobbyListResponse
-	packet.Sequence = 0
 	packet.Count = list.Count
 	packet.Lobbies = list.Lobbies
 
@@ -311,7 +330,6 @@ func (s *Server) SendLobbyListResponse(player *Player, list LobbyList) error {
 func (s *Server) SendGlobalChatResponse(player *Player, name, message string) error {
 	packet := GlobalChatResponsePacket{}
 	packet.Type = PacketTypeGlobalChatResponse
-	packet.Sequence = 0
 	packet.Name = name
 	packet.Message = message
 
@@ -322,7 +340,6 @@ func (s *Server) SendGlobalChatResponse(player *Player, name, message string) er
 func (s *Server) SendJoinLobbyResponse(player *Player, name, id string, success bool) error {
 	packet := JoinLobbyResponsePacket{}
 	packet.Type = PacketTypeJoinLobbyResponse
-	packet.Sequence = 0
 	packet.Name = name
 	packet.ID = id
 	packet.Success = success
@@ -334,9 +351,18 @@ func (s *Server) SendJoinLobbyResponse(player *Player, name, id string, success 
 func (s *Server) SendLeaveLobbyResponse(player *Player, name, id string, success bool) error {
 	packet := JoinLobbyResponsePacket{}
 	packet.Type = PacketTypeLeaveLobbyResponse
-	packet.Sequence = 0
 	packet.Name = name
 	packet.ID = id
+	packet.Success = success
+
+	e := WritePacket(player.Client, packet)
+	return e
+}
+
+func (s *Server) SendLobbyKickResponse(player *Player, target string, success bool) error {
+	packet := LobbyKickResponsePacket{}
+	packet.Type = PacketTypeKickLobbyResponse
+	packet.Target = target
 	packet.Success = success
 
 	e := WritePacket(player.Client, packet)
