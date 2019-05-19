@@ -261,6 +261,18 @@ func (s *Server) RemovePlayer(player *Player) {
 	s.Clients = clients
 }
 
+// PlayerHasLobby - This function is used to determine whether or not a player
+// is in a lobby.
+func (s *Server) PlayerHasLobby(player *Player) bool {
+	for _, lobby := range s.Lobbies {
+		if lobby.PlayerExists(player) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (s *Server) SendErrorPacket(client net.Conn, message string) error {
 	packet := ErrorPacket{}
 	packet.Sequence = 0
@@ -317,6 +329,18 @@ func (s *Server) SendGlobalChatResponse(player *Player, name, message string) er
 func (s *Server) SendJoinLobbyResponse(player *Player, name, id string, success bool) error {
 	packet := JoinLobbyResponsePacket{}
 	packet.Type = PacketTypeJoinLobbyResponse
+	packet.Sequence = 0
+	packet.Name = name
+	packet.ID = id
+	packet.Success = success
+
+	e := WritePacket(player.Client, packet)
+	return e
+}
+
+func (s *Server) SendLeaveLobbyResponse(player *Player, name, id string, success bool) error {
+	packet := JoinLobbyResponsePacket{}
+	packet.Type = PacketTypeLeaveLobbyResponse
 	packet.Sequence = 0
 	packet.Name = name
 	packet.ID = id
