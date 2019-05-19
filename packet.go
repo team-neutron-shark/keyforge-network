@@ -86,10 +86,15 @@ type JoinLobbyResponsePacket struct {
 
 type LeaveLobbyRequestPacket struct {
 	PacketHeader
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type LeaveLobbyResponsePacket struct {
 	PacketHeader
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	Success bool   `json:"success"`
 }
 
 type LobbyChatRequestPacket struct {
