@@ -144,20 +144,8 @@ func (s *Server) FindLobbyByName(name string) (*Lobby, error) {
 	return &Lobby{}, errors.New("no lobby found with the given ID")
 }
 
-// HandleConnection - Process incoming connections after being accepted.
-func (s *Server) HandleConnection(client net.Conn) {
-	s.ClientMutex.Lock()
-	defer s.ClientMutex.Unlock()
-
-}
-
 func (s *Server) Stop() {
 	s.Running = false
-
-	s.ListenerMutex.Lock()
-	defer s.ListenerMutex.Unlock()
-
-	s.Listener.Close()
 }
 
 func (s *Server) Log(message string) {
@@ -215,6 +203,9 @@ func (s *Server) CloseConnection(client net.Conn) {
 
 func (s *Server) FindPlayerByConnection(connection net.Conn) (*Player, error) {
 	for _, player := range s.Clients {
+		player.Lock()
+		defer player.Unlock()
+
 		if player.Client == connection {
 			return player, nil
 		}
@@ -224,10 +215,10 @@ func (s *Server) FindPlayerByConnection(connection net.Conn) (*Player, error) {
 }
 
 func (s *Server) PlayerExists(client *Player) bool {
-	s.ClientMutex.Lock()
-	defer s.ClientMutex.Unlock()
-
 	for _, player := range s.Clients {
+		player.Lock()
+		defer player.Unlock()
+
 		if player == client {
 			return true
 		}
@@ -239,9 +230,11 @@ func (s *Server) PlayerExists(client *Player) bool {
 func (s *Server) AddPlayer(player *Player) {
 	logEntry := fmt.Sprintf("Player %s logged in.", player.Name)
 	s.Log(logEntry)
+
 	if !s.PlayerExists(player) {
-		s.ClientMutex.Lock()
-		defer s.ClientMutex.Unlock()
+		player.Lock()
+		defer player.Unlock()
+
 		s.Clients = append(s.Clients, player)
 	}
 }
@@ -249,10 +242,10 @@ func (s *Server) AddPlayer(player *Player) {
 func (s *Server) RemovePlayer(player *Player) {
 	clients := []*Player{}
 
-	s.ClientMutex.Lock()
-	defer s.ClientMutex.Unlock()
-
 	for _, client := range s.Clients {
+		client.Lock()
+		defer client.Unlock()
+
 		if client != player {
 			clients = append(clients, client)
 		}

@@ -1,14 +1,15 @@
 package tests
 
 import (
-	keyforge "keyforge/game"
 	"testing"
+
+	kf "github.com/team-neutron-shark/keyforge-network"
 )
 
 func TestPlayerSetDeck(t *testing.T) {
-	player := keyforge.NewPlayer()
+	player := kf.NewPlayer()
 
-	deck, e := keyforge.LoadDeckFromFile("test_data/test_deck.json")
+	deck, e := kf.LoadDeckFromFile("test_data/test_deck.json")
 
 	if e != nil {
 		t.Error(e.Error())
@@ -16,15 +17,15 @@ func TestPlayerSetDeck(t *testing.T) {
 
 	player.SetDeck(deck)
 
-	if !keyforge.CompareCardOrder(deck.Cards, player.PlayerDeck.Cards) {
+	if !kf.CompareCardOrder(deck.Cards, player.PlayerDeck.Cards) {
 		t.Error("Player deck does not match deck on file.")
 	}
 }
 
 func TestPlayerDrawCard(t *testing.T) {
-	player := keyforge.NewPlayer()
+	player := kf.NewPlayer()
 
-	deck, e := keyforge.LoadDeckFromFile("test_data/test_deck.json")
+	deck, e := kf.LoadDeckFromFile("test_data/test_deck.json")
 
 	if e != nil {
 		t.Error(e.Error())
@@ -39,9 +40,9 @@ func TestPlayerDrawCard(t *testing.T) {
 }
 
 func TestPlayerDrawHand(t *testing.T) {
-	player := keyforge.NewPlayer()
+	player := kf.NewPlayer()
 
-	deck, e := keyforge.LoadDeckFromFile("test_data/test_deck.json")
+	deck, e := kf.LoadDeckFromFile("test_data/test_deck.json")
 
 	if e != nil {
 		t.Error(e.Error())
@@ -57,10 +58,10 @@ func TestPlayerDrawHand(t *testing.T) {
 }
 
 func TestPlayerShuffleDrawPile(t *testing.T) {
-	player := keyforge.NewPlayer()
-	copyHand := []keyforge.Card{}
+	player := kf.NewPlayer()
+	copyHand := []kf.Card{}
 
-	deck, e := keyforge.LoadDeckFromFile("test_data/test_deck.json")
+	deck, e := kf.LoadDeckFromFile("test_data/test_deck.json")
 
 	if e != nil {
 		t.Error(e.Error())
@@ -73,15 +74,15 @@ func TestPlayerShuffleDrawPile(t *testing.T) {
 
 	player.ShuffleDrawPile()
 
-	if keyforge.CompareCardOrder(deck.Cards, copyHand) {
+	if kf.CompareCardOrder(deck.Cards, copyHand) {
 		t.Error("Draw pile did not shuffle correctly!")
 	}
 }
 
 func TestPlayerShuffleDiscardPile(t *testing.T) {
-	player := keyforge.NewPlayer()
+	player := kf.NewPlayer()
 
-	deck, e := keyforge.LoadDeckFromFile("test_data/test_deck.json")
+	deck, e := kf.LoadDeckFromFile("test_data/test_deck.json")
 
 	if e != nil {
 		t.Error(e.Error())

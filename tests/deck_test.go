@@ -1,14 +1,15 @@
 package tests
 
 import (
-	keyforge "keyforge/game"
 	"testing"
+
+	kf "github.com/team-neutron-shark/keyforge-network"
 )
 
 var testLocation = "test_data/test_deck.json"
 
 func TestLoadDeckFromFile(t *testing.T) {
-	deck, e := keyforge.LoadDeckFromFile(testLocation)
+	deck, e := kf.LoadDeckFromFile(testLocation)
 
 	if e != nil {
 		t.Error(e.Error())

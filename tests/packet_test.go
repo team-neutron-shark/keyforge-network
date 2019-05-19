@@ -2,8 +2,9 @@ package tests
 
 import (
 	"fmt"
-	kfnetwork "keyforge-network"
 	"testing"
+
+	kfnetwork "github.com/team-neutron-shark/keyforge-network"
 )
 
 func TestReadWritePacket(t *testing.T) {
