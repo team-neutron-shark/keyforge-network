@@ -155,6 +155,9 @@ func (s *Server) HandleLobbyChatRequest(client net.Conn, packet LobbyChatRequest
 	}
 
 	for _, p := range lobby.Players() {
+		p.Lock()
+		defer p.Unlock()
+
 		s.SendLobbyChatResponse(p, player.Name, packet.Message)
 	}
 
