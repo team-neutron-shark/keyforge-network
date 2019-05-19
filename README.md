@@ -11,9 +11,9 @@
   - [x] Create lobby
   - [x] Join lobby
   - [x] Leave lobby
-  - [ ] Lobby kick
-  - [x] Lobby Chat
-  - [ ] Select Deck
+  - [x] Lobby kick
+  - [x] Lobby chat
+  - [ ] Select deck
 * Social
   - [x] Global chat
 * Vault API
