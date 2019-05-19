@@ -144,20 +144,8 @@ func (s *Server) FindLobbyByName(name string) (*Lobby, error) {
 	return &Lobby{}, errors.New("no lobby found with the given ID")
 }
 
-// HandleConnection - Process incoming connections after being accepted.
-func (s *Server) HandleConnection(client net.Conn) {
-	s.ClientMutex.Lock()
-	defer s.ClientMutex.Unlock()
-
-}
-
 func (s *Server) Stop() {
 	s.Running = false
-
-	s.ListenerMutex.Lock()
-	defer s.ListenerMutex.Unlock()
-
-	s.Listener.Close()
 }
 
 func (s *Server) Log(message string) {
