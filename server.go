@@ -140,50 +140,6 @@ func (s *Server) Accept() (net.Conn, error) {
 	return connection, nil
 }
 
-func (s *Server) AddLobby(creator *Player, name string) *Lobby {
-	lobby := NewLobby()
-	lobby.SetID(GenerateUUID())
-	lobby.AddPlayer(creator)
-	lobby.SetHost(creator)
-	lobby.SetName(name)
-
-	s.Lobbies = append(s.Lobbies, lobby)
-
-	return lobby
-}
-
-func (s *Server) RemoveLobby(lobby *Lobby) {
-	lobbies := []*Lobby{}
-
-	for _, l := range s.Lobbies {
-		if l != lobby {
-			lobbies = append(lobbies, l)
-		}
-	}
-
-	s.Lobbies = lobbies
-}
-
-func (s *Server) FindLobbyByID(id string) (*Lobby, error) {
-	for _, lobby := range s.Lobbies {
-		if lobby.ID() == id {
-			return lobby, nil
-		}
-	}
-
-	return &Lobby{}, errors.New("no lobby found with the given ID")
-}
-
-func (s *Server) FindLobbyByName(name string) (*Lobby, error) {
-	for _, lobby := range s.Lobbies {
-		if lobby.name == name {
-			return lobby, nil
-		}
-	}
-
-	return &Lobby{}, errors.New("no lobby found with the given ID")
-}
-
 func (s *Server) Stop() {
 	s.Running = false
 }
@@ -211,11 +167,7 @@ func (s *Server) ReadLoop(client net.Conn) {
 		event.connection = &client
 		event.packet = &packet
 		s.Notify(event)
-		//if s.Debug {
-		//	payload, _ := GetPacketPayload(packet)
-		//	logEntry := fmt.Sprintf("packet received from client %s - Payload: %s", client.RemoteAddr(), string(payload))
-		//	Logger().Log(logEntry)
-		//}
+
 		s.HandlePacket(client, packet)
 	}
 }
