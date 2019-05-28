@@ -7,5 +7,5 @@ type Observer interface {
 type Subject interface {
 	AddObserver(Observer)
 	RemoveObserver(Observer)
-	Notify()
+	Notify(Packet)
 }
