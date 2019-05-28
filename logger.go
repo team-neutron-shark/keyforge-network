@@ -74,8 +74,8 @@ func (l *LogManager) Warn(message string) {
 }
 
 // Notify - logs events.
-func (l *LogManager) Notify(packet Packet) {
-	payload, e := GetPacketPayload(packet)
+func (l *LogManager) Notify(event Event) {
+	payload, e := GetPacketPayload(*event.GetPacket())
 
 	if e != nil {
 		Logger().Error(fmt.Sprintf("Unable to retrieve packet payload: %s", e.Error()))
