@@ -6,6 +6,6 @@ func main() {
 	s := kfnetwork.NewServer(":8888")
 
 	for s.Running {
-		s.PrintLogs()
+		kfnetwork.Logger().PrintLogs()
 	}
 }

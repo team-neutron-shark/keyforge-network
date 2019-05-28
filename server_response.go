@@ -31,6 +31,12 @@ func (s *Server) HandlePacket(client net.Conn, packet Packet) {
 	}
 }
 
+<<<<<<< HEAD
+func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) {
+	if packet.Version != ProtocolVersion {
+		logEntry := fmt.Sprintf("Client %s sent a version packet with a mismatching version.", client.RemoteAddr())
+		Logger().Error(logEntry)
+=======
 func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) error {
 	debugString := fmt.Sprintf("HandleVersionPacket: %+v", packet)
 	s.Log(debugString)
@@ -41,6 +47,7 @@ func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) err
 			s.Log(logEntry)
 		}
 
+>>>>>>> f7095371a7dd5dd8b09e3e483822d2e4d39cb5d0
 		s.SendErrorPacket(client, "Protocol version mismatch.")
 		s.CloseConnection(client)
 		return errors.New("protocol version mismatch")
@@ -90,7 +97,7 @@ func (s *Server) HandleCreateLobbyRequest(client net.Conn, packet CreateLobbyReq
 	if e != nil {
 		if s.Debug {
 			logEntry := fmt.Sprintf("HandleCreateLobbyRequest: %s", e.Error())
-			s.Log(logEntry)
+			Logger().Log(logEntry)
 		}
 
 		return e
@@ -102,7 +109,7 @@ func (s *Server) HandleCreateLobbyRequest(client net.Conn, packet CreateLobbyReq
 	lobby := s.AddLobby(player, packet.Name)
 
 	logEntry := fmt.Sprintf("Player %s created lobby %s (%s)", player.Name, lobby.name, lobby.ID())
-	s.Log(logEntry)
+	Logger().Log(logEntry)
 
 	e = s.SendCreateLobbyResponse(player, lobby.ID())
 	return e
@@ -114,7 +121,7 @@ func (s *Server) HandlePlayerListRequest(client net.Conn, packet PlayerListReque
 	if e != nil {
 		if s.Debug {
 			logEntry := fmt.Sprintf("HandlePlayerListRequest: %s", e.Error())
-			s.Log(logEntry)
+			Logger().Log(logEntry)
 		}
 		return e
 	}
@@ -141,7 +148,7 @@ func (s *Server) HandlePlayerListRequest(client net.Conn, packet PlayerListReque
 	}
 
 	logEntry := fmt.Sprintf("Player %s requested the player list", player.Name)
-	s.Log(logEntry)
+	Logger().Log(logEntry)
 	return nil
 }
 
@@ -185,8 +192,8 @@ func (s *Server) HandleGlobalChatRequest(client net.Conn, packet GlobalChatReque
 		s.SendGlobalChatResponse(p, playerName, packet.Message)
 	}
 
-	logEntry := fmt.Sprintf("(Global Chat) %s: %s", playerName, packet.Message)
-	s.Log(logEntry)
+	logEntry := fmt.Sprintf("(Global Chat) %s: %s", player.Name, packet.Message)
+	Logger().Log(logEntry)
 	return nil
 }
 
@@ -209,7 +216,7 @@ func (s *Server) HandleLobbyListRequest(client net.Conn, packet LobbyListRequest
 	s.SendLobbyListResponse(player, lobbyList)
 
 	logEntry := fmt.Sprintf("Player %s requested a lobby list.", player.Name)
-	s.Log(logEntry)
+	Logger().Log(logEntry)
 	return nil
 }
 

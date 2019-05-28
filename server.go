@@ -17,6 +17,7 @@ type Server struct {
 	ListenerMutex sync.Mutex
 	Lobbies       []*Lobby
 	LogQueue      chan string
+	observers     []Observer
 	PacketQueue   chan Packet
 	Running       bool
 }
@@ -36,6 +37,9 @@ func NewServer(address string) *Server {
 		Logger().Warn(logEntry)
 	}
 
+	// Add Observers
+	server.AddObserver(Logger())
+
 	// Start the listen loop on the specified address
 	go server.ListenLoop(address)
 
@@ -44,6 +48,34 @@ func NewServer(address string) *Server {
 	}
 
 	return server
+}
+
+// AddObserver - Adds an observer to the list of observers. Observers would be
+// types such as loggers, packet responders, and other "classes" that need to
+// concern themselves with incoming packet events.
+func (s *Server) AddObserver(observer Observer) {
+	s.observers = append(s.observers, observer)
+}
+
+// RemoveObserver - Removes an observer from the list of observers. Generally
+// one wouldn't want to do this in practice, but it's there if we need it.
+func (s *Server) RemoveObserver(observer Observer) {
+	observers := []Observer{}
+
+	for _, o := range s.observers {
+		if o != observer {
+			observers = append(observers)
+		}
+	}
+
+	s.observers = observers
+}
+
+// Notify - Notifies observers that a network event has occured.
+func (s *Server) Notify(event Event) {
+	for _, observer := range s.observers {
+		observer.Notify(event)
+	}
 }
 
 // Listen - Listen for incoming connections
@@ -166,7 +198,7 @@ func (s *Server) ReadLoop(client net.Conn) {
 
 		if e != nil {
 			logEntry := fmt.Sprintf("ReadPacket: %s", e.Error())
-			Logger().Log(logEntry)
+			Logger().Error(logEntry)
 			player, e := s.FindPlayerByConnection(client)
 			if e == nil {
 				s.RemovePlayer(player)
@@ -175,11 +207,15 @@ func (s *Server) ReadLoop(client net.Conn) {
 			return
 		}
 
-		if s.Debug {
-			payload, _ := GetPacketPayload(packet)
-			logEntry := fmt.Sprintf("packet received from client %s - Payload: %s", client.RemoteAddr(), string(payload))
-			Logger().Log(logEntry)
-		}
+		event := NetworkEvent{}
+		event.connection = &client
+		event.packet = &packet
+		s.Notify(event)
+		//if s.Debug {
+		//	payload, _ := GetPacketPayload(packet)
+		//	logEntry := fmt.Sprintf("packet received from client %s - Payload: %s", client.RemoteAddr(), string(payload))
+		//	Logger().Log(logEntry)
+		//}
 		s.HandlePacket(client, packet)
 	}
 }
