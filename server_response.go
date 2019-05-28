@@ -25,11 +25,11 @@ func (s *Server) HandlePacket(client net.Conn, packet Packet) {
 
 func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) {
 	debugString := fmt.Sprintf("HandleVersionPacket: %+v", packet)
-	s.Log(debugString)
+	Logger().Log(debugString)
 	if packet.Version != ProtocolVersion {
 		if s.Debug {
 			logEntry := fmt.Sprintf("Client %s sent a version packet with a mismatching version.", client.RemoteAddr())
-			s.Log(logEntry)
+			Logger().Log(logEntry)
 		}
 		s.SendErrorPacket(client, "Protocol version mismatch.")
 		s.CloseConnection(client)
@@ -76,7 +76,7 @@ func (s *Server) HandleCreateLobbyRequest(client net.Conn, packet CreateLobbyReq
 	if e != nil {
 		if s.Debug {
 			logEntry := fmt.Sprintf("HandleCreateLobbyRequest: %s", e.Error())
-			s.Log(logEntry)
+			Logger().Log(logEntry)
 		}
 
 		return e
@@ -85,7 +85,7 @@ func (s *Server) HandleCreateLobbyRequest(client net.Conn, packet CreateLobbyReq
 	lobby := s.AddLobby(player, packet.Name)
 
 	logEntry := fmt.Sprintf("Player %s created lobby %s (%s)", player.Name, lobby.name, lobby.ID())
-	s.Log(logEntry)
+	Logger().Log(logEntry)
 
 	e = s.SendCreateLobbyResponse(player, lobby.ID())
 	return e
@@ -97,7 +97,7 @@ func (s *Server) HandlePlayerListRequest(client net.Conn, packet PlayerListReque
 	if e != nil {
 		if s.Debug {
 			logEntry := fmt.Sprintf("HandlePlayerListRequest: %s", e.Error())
-			s.Log(logEntry)
+			Logger().Log(logEntry)
 		}
 		return e
 	}
@@ -121,7 +121,7 @@ func (s *Server) HandlePlayerListRequest(client net.Conn, packet PlayerListReque
 	}
 
 	logEntry := fmt.Sprintf("Player %s requested the player list", player.Name)
-	s.Log(logEntry)
+	Logger().Log(logEntry)
 	return nil
 }
 
@@ -141,7 +141,7 @@ func (s *Server) HandleGlobalChatRequest(client net.Conn, packet GlobalChatReque
 	}
 
 	logEntry := fmt.Sprintf("(Global Chat) %s: %s", player.Name, packet.Message)
-	s.Log(logEntry)
+	Logger().Log(logEntry)
 	return nil
 }
 
@@ -164,7 +164,7 @@ func (s *Server) HandleLobbyListRequest(client net.Conn, packet LobbyListRequest
 	s.SendLobbyListResponse(player, lobbyList)
 
 	logEntry := fmt.Sprintf("Player %s requested a lobby list.", player.Name)
-	s.Log(logEntry)
+	Logger().Log(logEntry)
 	return nil
 }
 
