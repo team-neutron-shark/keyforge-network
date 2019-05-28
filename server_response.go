@@ -31,7 +31,7 @@ func (s *Server) HandlePacket(client net.Conn, packet Packet) {
 	}
 }
 
-func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) {
+func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) error {
 	if packet.Version != ProtocolVersion {
 		logEntry := fmt.Sprintf("Client %s sent a version packet with a mismatching version.", client.RemoteAddr())
 		Logger().Error(logEntry)
@@ -94,7 +94,7 @@ func (s *Server) HandleCreateLobbyRequest(client net.Conn, packet CreateLobbyReq
 	player.Lock()
 	defer player.Unlock()
 
-	lobby := s.AddLobby(player, packet.Name)
+	lobby := Lobbies().AddLobby(player, packet.Name)
 
 	logEntry := fmt.Sprintf("Player %s created lobby %s (%s)", player.Name, lobby.name, lobby.ID())
 	Logger().Log(logEntry)
@@ -147,7 +147,7 @@ func (s *Server) HandleLobbyChatRequest(client net.Conn, packet LobbyChatRequest
 		return e
 	}
 
-	lobby, e := s.FindLobbyByPlayer(player)
+	lobby, e := Lobbies().FindLobbyByPlayer(player)
 
 	if e != nil {
 		return e
@@ -194,7 +194,7 @@ func (s *Server) HandleLobbyListRequest(client net.Conn, packet LobbyListRequest
 		return e
 	}
 
-	for _, lobby := range s.Lobbies {
+	for _, lobby := range Lobbies().GetLobbies() {
 		entry := LobbyListEntry{ID: lobby.ID(), Name: lobby.Name()}
 		lobbyList.Lobbies = append(lobbyList.Lobbies, entry)
 	}
@@ -215,7 +215,7 @@ func (s *Server) HandleJoinLobbyRequest(client net.Conn, packet JoinLobbyRequest
 		return e
 	}
 
-	lobby, e := s.FindLobbyByID(packet.ID)
+	lobby, e := Lobbies().FindLobbyByID(packet.ID)
 
 	if e == nil {
 		lobby.AddPlayer(player)
@@ -229,7 +229,7 @@ func (s *Server) HandleJoinLobbyRequest(client net.Conn, packet JoinLobbyRequest
 		return nil
 	}
 
-	lobby, e = s.FindLobbyByName(packet.Name)
+	lobby, e = Lobbies().FindLobbyByName(packet.Name)
 
 	if e == nil {
 		lobby.AddPlayer(player)
@@ -257,7 +257,7 @@ func (s *Server) HandleLeaveLobbyRequest(client net.Conn, packet LeaveLobbyReque
 		return errors.New("player is not in a lobby")
 	}
 
-	lobby, e := s.FindLobbyByID(packet.ID)
+	lobby, e := Lobbies().FindLobbyByID(packet.ID)
 
 	if e == nil {
 		lobby.RemovePlayer(player)
@@ -269,7 +269,7 @@ func (s *Server) HandleLeaveLobbyRequest(client net.Conn, packet LeaveLobbyReque
 		return nil
 	}
 
-	lobby, e = s.FindLobbyByName(packet.Name)
+	lobby, e = Lobbies().FindLobbyByName(packet.Name)
 
 	if e == nil {
 		lobby.RemovePlayer(player)
@@ -299,7 +299,7 @@ func (s *Server) HandleLobbyKickRequest(client net.Conn, packet LobbyKickRequest
 		return e
 	}
 
-	lobby, e := s.FindLobbyByPlayer(player)
+	lobby, e := Lobbies().FindLobbyByPlayer(player)
 
 	if e != nil {
 		return e
