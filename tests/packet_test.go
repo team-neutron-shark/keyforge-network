@@ -2,15 +2,15 @@ package tests
 
 import (
 	"fmt"
-	kfnetwork "keyforge-network"
 	"testing"
+
+	kfnetwork "github.com/team-neutron-shark/keyforge-network"
 )
 
 func TestReadWritePacket(t *testing.T) {
 	testConnection := NewMockNetworkConnection()
 
 	packet := kfnetwork.VersionPacket{}
-	packet.Sequence = 12345
 	packet.Type = kfnetwork.PacketTypeVersionRequest
 	packet.Version = 1.23
 
@@ -26,10 +26,6 @@ func TestReadWritePacket(t *testing.T) {
 	if e != nil {
 		errorMessage := fmt.Sprintf("error reading packet - %s", e.Error())
 		t.Error(errorMessage)
-	}
-
-	if packetResult.(kfnetwork.VersionPacket).Sequence != 12345 {
-		t.Error("Packet sequence not read correctly.")
 	}
 
 	if packetResult.(kfnetwork.VersionPacket).Type != kfnetwork.PacketTypeVersionRequest {

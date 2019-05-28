@@ -52,6 +52,8 @@ const (
 	PacketTypeDiscardCardResponse
 	PacketTypeUseCardRequest
 	PacketTypeUseCardResponse
+	PacketTypeLobbyChatRequest
+	PacketTypeLobbyChatResponse
 )
 
 type PileType uint8

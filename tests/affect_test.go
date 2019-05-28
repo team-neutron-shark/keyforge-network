@@ -1,16 +1,17 @@
 package tests
 
 import (
-	kfnetwork "keyforge-network"
 	"testing"
+
+	kf "github.com/team-neutron-shark/keyforge-network"
 )
 
 func TestPlayerAddAffect(t *testing.T) {
-	player := kfnetwork.NewPlayer()
+	player := kf.NewPlayer()
 
 	// Simulate a one-turn inability to forge a la Miasma.
-	affect := kfnetwork.NewPlayerAffect()
-	affect.SetType(kfnetwork.PlayerAffectCannotForge)
+	affect := kf.NewPlayerAffect()
+	affect.SetType(kf.PlayerAffectCannotForge)
 	affect.SetPermanent(false)
 	affect.SetDuration(1)
 
@@ -22,7 +23,7 @@ func TestPlayerAddAffect(t *testing.T) {
 		t.Error("player should have one affect")
 	}
 
-	if affects[0].Type() != kfnetwork.PlayerAffectCannotForge {
+	if affects[0].Type() != kf.PlayerAffectCannotForge {
 		t.Error("affect type does not match the added affect")
 	}
 
@@ -36,11 +37,11 @@ func TestPlayerAddAffect(t *testing.T) {
 }
 
 func TestPlayerAddSameAffectTwice(t *testing.T) {
-	player := kfnetwork.NewPlayer()
+	player := kf.NewPlayer()
 
 	// Simulate a one-turn inability to forge a la Miasma.
-	miasmaAffect := kfnetwork.NewPlayerAffect()
-	miasmaAffect.SetType(kfnetwork.PlayerAffectCannotForge)
+	miasmaAffect := kf.NewPlayerAffect()
+	miasmaAffect.SetType(kf.PlayerAffectCannotForge)
 	miasmaAffect.SetPermanent(false)
 	miasmaAffect.SetDuration(1)
 
@@ -55,11 +56,11 @@ func TestPlayerAddSameAffectTwice(t *testing.T) {
 }
 
 func TestPlayerRemoveAffect(t *testing.T) {
-	player := kfnetwork.NewPlayer()
+	player := kf.NewPlayer()
 
 	// Simulate a one-turn inability to forge a la Miasma.
-	miasmaAffect := kfnetwork.NewPlayerAffect()
-	miasmaAffect.SetType(kfnetwork.PlayerAffectCannotForge)
+	miasmaAffect := kf.NewPlayerAffect()
+	miasmaAffect.SetType(kf.PlayerAffectCannotForge)
 	miasmaAffect.SetPermanent(false)
 	miasmaAffect.SetDuration(1)
 
