@@ -33,14 +33,14 @@ func NewServer(address string) *Server {
 
 	if e != nil && server.Debug {
 		logEntry := fmt.Sprintf("error loading card data: %s", e.Error())
-		server.Log(logEntry)
+		Logger().Warn(logEntry)
 	}
 
 	// Start the listen loop on the specified address
 	go server.ListenLoop(address)
 
 	if server.Debug {
-		server.Log("Server successfully started.")
+		Logger().Log("Server successfully started.")
 	}
 
 	return server
@@ -58,7 +58,7 @@ func (s *Server) Listen(address string) error {
 
 	if s.Debug {
 		logEntry := fmt.Sprintf("Listener started on address %s.", address)
-		s.Log(logEntry)
+		Logger().Log(logEntry)
 	}
 
 	return nil
@@ -67,7 +67,15 @@ func (s *Server) Listen(address string) error {
 // ListenLoop - Listen on the specified address and accept incoming clients.
 // Spins off a new goroutine to handle the incoming client.
 func (s *Server) ListenLoop(address string) {
-	s.Listen(address)
+	e := s.Listen(address)
+
+	// If we can't listen on the port print an error, halt the server, and return.
+	if e != nil {
+		logEntry := fmt.Sprintf("Unable to listen on address %s: %s", address, e.Error())
+		Logger().Error(logEntry)
+		s.Running = false
+		return
+	}
 
 	for s.Running {
 		client, e := s.Accept()
@@ -78,7 +86,7 @@ func (s *Server) ListenLoop(address string) {
 		} else {
 			if s.Debug {
 				logEntry := fmt.Sprintf("Client connection accepted from remote address %s.", client.RemoteAddr())
-				s.Log(logEntry)
+				Logger().Log(logEntry)
 			}
 
 			// Handle accepted client
@@ -149,24 +157,7 @@ func (s *Server) Stop() {
 }
 
 func (s *Server) Log(message string) {
-	logMessage := fmt.Sprintf("[LOG] %s", message)
-	s.LogQueue <- logMessage
-}
-
-func (s *Server) GetLogs() []string {
-	logs := []string{}
-
-	for len(s.LogQueue) > 0 {
-		logs = append(logs, <-s.LogQueue)
-	}
-
-	return logs
-}
-
-func (s *Server) PrintLogs() {
-	for _, log := range s.GetLogs() {
-		fmt.Println(log)
-	}
+	Logger().Log(message)
 }
 
 func (s *Server) ReadLoop(client net.Conn) {
@@ -175,7 +166,7 @@ func (s *Server) ReadLoop(client net.Conn) {
 
 		if e != nil {
 			logEntry := fmt.Sprintf("ReadPacket: %s", e.Error())
-			s.Log(logEntry)
+			Logger().Log(logEntry)
 			player, e := s.FindPlayerByConnection(client)
 			if e == nil {
 				s.RemovePlayer(player)
@@ -187,7 +178,7 @@ func (s *Server) ReadLoop(client net.Conn) {
 		if s.Debug {
 			payload, _ := GetPacketPayload(packet)
 			logEntry := fmt.Sprintf("packet received from client %s - Payload: %s", client.RemoteAddr(), string(payload))
-			s.Log(logEntry)
+			Logger().Log(logEntry)
 		}
 		s.HandlePacket(client, packet)
 	}
@@ -196,7 +187,7 @@ func (s *Server) ReadLoop(client net.Conn) {
 func (s *Server) CloseConnection(client net.Conn) {
 	if s.Debug {
 		logMessage := fmt.Sprintf("Closing remote connection for %s.", client.RemoteAddr())
-		s.Log(logMessage)
+		Logger().Log(logMessage)
 	}
 	client.Close()
 }
@@ -229,7 +220,7 @@ func (s *Server) PlayerExists(client *Player) bool {
 
 func (s *Server) AddPlayer(player *Player) {
 	logEntry := fmt.Sprintf("Player %s logged in.", player.Name)
-	s.Log(logEntry)
+	Logger().Log(logEntry)
 
 	if !s.PlayerExists(player) {
 		player.Lock()
