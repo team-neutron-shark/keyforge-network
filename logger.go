@@ -61,12 +61,27 @@ func (l *LogManager) PrintLogs() {
 	}
 }
 
+// Error - Logs an error.
 func (l *LogManager) Error(message string) {
 	logMessage := fmt.Sprintf("[  ERROR  ] %s", message)
 	l.logQueue <- logMessage
 }
 
+// Warn - Emits a warning to the console.
 func (l *LogManager) Warn(message string) {
 	logMessage := fmt.Sprintf("[ WARNING ] %s", message)
 	l.logQueue <- logMessage
+}
+
+// Notify - logs events.
+func (l *LogManager) Notify(packet Packet) {
+	payload, e := GetPacketPayload(packet)
+
+	if e != nil {
+		Logger().Error(fmt.Sprintf("Unable to retrieve packet payload: %s", e.Error()))
+		return
+	}
+
+	logEntry := fmt.Sprintf("Received packet with the following payload: %s", payload)
+	l.Log(logEntry)
 }
