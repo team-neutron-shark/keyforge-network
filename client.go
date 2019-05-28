@@ -27,7 +27,6 @@ func (c *Client) Connect(address string) error {
 
 func (c *Client) SendVersionRequest() error {
 	packet := VersionPacket{}
-	packet.Sequence = c.Sequence
 	packet.Type = PacketTypeVersionRequest
 	packet.Version = ProtocolVersion
 
@@ -38,7 +37,6 @@ func (c *Client) SendVersionRequest() error {
 
 func (c *Client) SendExitRequest() error {
 	packet := ExitPacket{}
-	packet.Sequence = c.Sequence
 	packet.Type = PacketTypeExit
 
 	e := WritePacket(c.Connection, packet)
@@ -48,7 +46,6 @@ func (c *Client) SendExitRequest() error {
 
 func (c *Client) SendLoginRequest(name string, id string, token string) error {
 	packet := LoginRequestPacket{}
-	packet.Sequence = c.Sequence
 	packet.Type = PacketTypeLoginRequest
 	packet.Name = name
 	packet.ID = id
@@ -61,7 +58,6 @@ func (c *Client) SendLoginRequest(name string, id string, token string) error {
 
 func (c *Client) SendCreateLobbyRequest(name string) error {
 	packet := CreateLobbyRequestPacket{}
-	packet.Sequence = c.Sequence
 	packet.Type = PacketTypeCreateLobbyRequest
 	packet.Name = name
 
@@ -72,7 +68,6 @@ func (c *Client) SendCreateLobbyRequest(name string) error {
 
 func (c *Client) SendGetCardPile(pile uint8) error {
 	packet := CardPileRequestPacket{}
-	packet.Sequence = c.Sequence
 	packet.Type = PacketTypeCardPileRequest
 	packet.Pile = pile
 
@@ -83,7 +78,6 @@ func (c *Client) SendGetCardPile(pile uint8) error {
 
 func (c *Client) SendPlayerListRequest() error {
 	packet := PlayerListRequestPacket{}
-	packet.Sequence = c.Sequence
 	packet.Type = PacketTypePlayerListRequest
 
 	e := WritePacket(c.Connection, packet)
@@ -93,7 +87,6 @@ func (c *Client) SendPlayerListRequest() error {
 
 func (c *Client) SendGlobalChatRequest(message string) error {
 	packet := GlobalChatRequestPacket{}
-	packet.Sequence = c.Sequence
 	packet.Type = PacketTypeGlobalChatRequest
 	packet.Message = message
 
@@ -104,7 +97,6 @@ func (c *Client) SendGlobalChatRequest(message string) error {
 
 func (c *Client) SendLobbyListRequest() error {
 	packet := LobbyListRequestPacket{}
-	packet.Sequence = c.Sequence
 	packet.Type = PacketTypeLobbyListRequest
 
 	e := WritePacket(c.Connection, packet)
@@ -114,7 +106,6 @@ func (c *Client) SendLobbyListRequest() error {
 
 func (c *Client) SendJoinLobbyRequest(query string) error {
 	packet := JoinLobbyRequestPacket{}
-	packet.Sequence = c.Sequence
 	packet.Type = PacketTypeJoinLobbyRequest
 	packet.Name = query
 

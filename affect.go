@@ -1,5 +1,7 @@
 package kfnetwork
 
+import "sync"
+
 type Affect interface {
 	Duration() uint
 	Type() uint
@@ -8,6 +10,7 @@ type Affect interface {
 }
 
 type PlayerAffect struct {
+	affectMutex  sync.Mutex
 	duration     uint
 	affectType   uint
 	card         *Card
@@ -19,6 +22,14 @@ type PlayerAffect struct {
 func NewPlayerAffect() *PlayerAffect {
 	playerAffect := new(PlayerAffect)
 	return playerAffect
+}
+
+func (p *PlayerAffect) Lock() {
+	p.affectMutex.Lock()
+}
+
+func (p *PlayerAffect) Unlock() {
+	p.affectMutex.Unlock()
 }
 
 func (p *PlayerAffect) Duration() uint {

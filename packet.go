@@ -12,9 +12,9 @@ type Packet interface {
 }
 
 type PacketHeader struct {
-	Sequence uint16 `json:"sequence"`
-	Type     uint16 `json:"type"`
-	Length   uint16 `json:"-"`
+	//Sequence uint16 `json:"sequence"`
+	Type   uint16 `json:"type"`
+	Length uint16 `json:"-"`
 }
 
 type VersionPacket struct {
@@ -86,10 +86,15 @@ type JoinLobbyResponsePacket struct {
 
 type LeaveLobbyRequestPacket struct {
 	PacketHeader
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type LeaveLobbyResponsePacket struct {
 	PacketHeader
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	Success bool   `json:"success"`
 }
 
 type LobbyChatRequestPacket struct {

@@ -184,20 +184,8 @@ func (s *Server) FindLobbyByName(name string) (*Lobby, error) {
 	return &Lobby{}, errors.New("no lobby found with the given ID")
 }
 
-// HandleConnection - Process incoming connections after being accepted.
-func (s *Server) HandleConnection(client net.Conn) {
-	s.ClientMutex.Lock()
-	defer s.ClientMutex.Unlock()
-
-}
-
 func (s *Server) Stop() {
 	s.Running = false
-
-	s.ListenerMutex.Lock()
-	defer s.ListenerMutex.Unlock()
-
-	s.Listener.Close()
 }
 
 func (s *Server) Log(message string) {
@@ -239,6 +227,9 @@ func (s *Server) CloseConnection(client net.Conn) {
 
 func (s *Server) FindPlayerByConnection(connection net.Conn) (*Player, error) {
 	for _, player := range s.Clients {
+		player.Lock()
+		defer player.Unlock()
+
 		if player.Client == connection {
 			return player, nil
 		}
@@ -248,10 +239,10 @@ func (s *Server) FindPlayerByConnection(connection net.Conn) (*Player, error) {
 }
 
 func (s *Server) PlayerExists(client *Player) bool {
-	s.ClientMutex.Lock()
-	defer s.ClientMutex.Unlock()
-
 	for _, player := range s.Clients {
+		player.Lock()
+		defer player.Unlock()
+
 		if player == client {
 			return true
 		}
@@ -265,8 +256,9 @@ func (s *Server) AddPlayer(player *Player) {
 	Logger().Log(logEntry)
 
 	if !s.PlayerExists(player) {
-		s.ClientMutex.Lock()
-		defer s.ClientMutex.Unlock()
+		player.Lock()
+		defer player.Unlock()
+
 		s.Clients = append(s.Clients, player)
 	}
 }
@@ -274,10 +266,10 @@ func (s *Server) AddPlayer(player *Player) {
 func (s *Server) RemovePlayer(player *Player) {
 	clients := []*Player{}
 
-	s.ClientMutex.Lock()
-	defer s.ClientMutex.Unlock()
-
 	for _, client := range s.Clients {
+		client.Lock()
+		defer client.Unlock()
+
 		if client != player {
 			clients = append(clients, client)
 		}
@@ -286,11 +278,54 @@ func (s *Server) RemovePlayer(player *Player) {
 	s.Clients = clients
 }
 
+// PlayerHasLobby - This function is used to determine whether or not a player
+// is in a lobby.
+func (s *Server) PlayerHasLobby(player *Player) bool {
+	for _, lobby := range s.Lobbies {
+		if lobby.PlayerExists(player) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (s *Server) FindLobbyByPlayer(player *Player) (*Lobby, error) {
+	for _, lobby := range s.Lobbies {
+		if lobby.PlayerExists(player) {
+			return lobby, nil
+		}
+	}
+
+	return &Lobby{}, errors.New("no lobby found")
+}
+
+func (s *Server) FindPlayerByID(id string) (*Player, error) {
+	for _, player := range s.Clients {
+		player.Lock()
+		defer player.Unlock()
+
+		if player.ID == id {
+			return player, nil
+		}
+	}
+
+	return &Player{}, errors.New("no such player found")
+}
+
 func (s *Server) SendErrorPacket(client net.Conn, message string) error {
 	packet := ErrorPacket{}
-	packet.Sequence = 0
 	packet.Type = PacketTypeError
 	packet.Message = message
+
+	e := WritePacket(client, packet)
+	return e
+}
+
+func (s *Server) SendVersionResponse(client net.Conn) error {
+	packet := VersionPacket{}
+	packet.Type = PacketTypeVersionResponse
+	packet.Version = ProtocolVersion
 
 	e := WritePacket(client, packet)
 	return e
@@ -299,7 +334,6 @@ func (s *Server) SendErrorPacket(client net.Conn, message string) error {
 func (s *Server) SendCreateLobbyResponse(player *Player, id string) error {
 	packet := CreateLobbyResponsePacket{}
 	packet.Type = PacketTypeCreateLobbyResponse
-	packet.Sequence = 0
 	packet.ID = id
 
 	e := WritePacket(player.Client, packet)
@@ -309,7 +343,6 @@ func (s *Server) SendCreateLobbyResponse(player *Player, id string) error {
 func (s *Server) SendPlayerListResponse(player *Player, list PlayerList) error {
 	packet := PlayerListResponsePacket{}
 	packet.Type = PacketTypePlayerListResponse
-	packet.Sequence = 0
 	packet.Count = list.Count
 	packet.Players = list.Players
 
@@ -320,7 +353,6 @@ func (s *Server) SendPlayerListResponse(player *Player, list PlayerList) error {
 func (s *Server) SendLobbyListResponse(player *Player, list LobbyList) error {
 	packet := LobbyListResponsePacket{}
 	packet.Type = PacketTypeLobbyListResponse
-	packet.Sequence = 0
 	packet.Count = list.Count
 	packet.Lobbies = list.Lobbies
 
@@ -331,7 +363,6 @@ func (s *Server) SendLobbyListResponse(player *Player, list LobbyList) error {
 func (s *Server) SendGlobalChatResponse(player *Player, name, message string) error {
 	packet := GlobalChatResponsePacket{}
 	packet.Type = PacketTypeGlobalChatResponse
-	packet.Sequence = 0
 	packet.Name = name
 	packet.Message = message
 
@@ -342,10 +373,40 @@ func (s *Server) SendGlobalChatResponse(player *Player, name, message string) er
 func (s *Server) SendJoinLobbyResponse(player *Player, name, id string, success bool) error {
 	packet := JoinLobbyResponsePacket{}
 	packet.Type = PacketTypeJoinLobbyResponse
-	packet.Sequence = 0
 	packet.Name = name
 	packet.ID = id
 	packet.Success = success
+
+	e := WritePacket(player.Client, packet)
+	return e
+}
+
+func (s *Server) SendLeaveLobbyResponse(player *Player, name, id string, success bool) error {
+	packet := JoinLobbyResponsePacket{}
+	packet.Type = PacketTypeLeaveLobbyResponse
+	packet.Name = name
+	packet.ID = id
+	packet.Success = success
+
+	e := WritePacket(player.Client, packet)
+	return e
+}
+
+func (s *Server) SendLobbyKickResponse(player *Player, target string, success bool) error {
+	packet := LobbyKickResponsePacket{}
+	packet.Type = PacketTypeKickLobbyResponse
+	packet.Target = target
+	packet.Success = success
+
+	e := WritePacket(player.Client, packet)
+	return e
+}
+
+func (s *Server) SendLobbyChatResponse(player *Player, name string, message string) error {
+	packet := LobbyChatResponsePacket{}
+	packet.Type = PacketTypeLobbyChatResponse
+	packet.Name = name
+	packet.Message = message
 
 	e := WritePacket(player.Client, packet)
 	return e
