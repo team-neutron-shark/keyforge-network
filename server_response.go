@@ -31,23 +31,11 @@ func (s *Server) HandlePacket(client net.Conn, packet Packet) {
 	}
 }
 
-<<<<<<< HEAD
 func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) {
 	if packet.Version != ProtocolVersion {
 		logEntry := fmt.Sprintf("Client %s sent a version packet with a mismatching version.", client.RemoteAddr())
 		Logger().Error(logEntry)
-=======
-func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) error {
-	debugString := fmt.Sprintf("HandleVersionPacket: %+v", packet)
-	s.Log(debugString)
 
-	if packet.Version != ProtocolVersion {
-		if s.Debug {
-			logEntry := fmt.Sprintf("Client %s sent a version packet with a mismatching version.", client.RemoteAddr())
-			s.Log(logEntry)
-		}
-
->>>>>>> f7095371a7dd5dd8b09e3e483822d2e4d39cb5d0
 		s.SendErrorPacket(client, "Protocol version mismatch.")
 		s.CloseConnection(client)
 		return errors.New("protocol version mismatch")
