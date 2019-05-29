@@ -75,7 +75,14 @@ func (l *LogManager) Warn(message string) {
 
 // Notify - logs events.
 func (l *LogManager) Notify(event Event) {
-	payload, e := GetPacketPayload(*event.GetPacket())
+	switch event.(type) {
+	case NetworkEvent:
+		l.LogNetworkEvent(event.(NetworkEvent))
+	}
+}
+
+func (l *LogManager) LogNetworkEvent(event NetworkEvent) {
+	payload, e := GetPacketPayload(*event.packet)
 
 	if e != nil {
 		Logger().Error(fmt.Sprintf("Unable to retrieve packet payload: %s", e.Error()))
