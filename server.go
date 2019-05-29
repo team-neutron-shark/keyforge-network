@@ -155,9 +155,9 @@ func (s *Server) ReadLoop(client net.Conn) {
 		if e != nil {
 			logEntry := fmt.Sprintf("ReadPacket: %s", e.Error())
 			Logger().Error(logEntry)
-			player, e := s.FindPlayerByConnection(client)
+			player, e := Players().FindPlayerByConnection(client)
 			if e == nil {
-				s.RemovePlayer(player)
+				Players().RemovePlayer(player)
 			}
 			s.CloseConnection(client)
 			return
@@ -180,59 +180,6 @@ func (s *Server) CloseConnection(client net.Conn) {
 	client.Close()
 }
 
-func (s *Server) FindPlayerByConnection(connection net.Conn) (*Player, error) {
-	for _, player := range s.Clients {
-		player.Lock()
-		defer player.Unlock()
-
-		if player.Client == connection {
-			return player, nil
-		}
-	}
-
-	return &Player{}, errors.New("could not find any players with the given connection")
-}
-
-func (s *Server) PlayerExists(client *Player) bool {
-	for _, player := range s.Clients {
-		player.Lock()
-		defer player.Unlock()
-
-		if player == client {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (s *Server) AddPlayer(player *Player) {
-	logEntry := fmt.Sprintf("Player %s logged in.", player.Name)
-	Logger().Log(logEntry)
-
-	if !s.PlayerExists(player) {
-		player.Lock()
-		defer player.Unlock()
-
-		s.Clients = append(s.Clients, player)
-	}
-}
-
-func (s *Server) RemovePlayer(player *Player) {
-	clients := []*Player{}
-
-	for _, client := range s.Clients {
-		client.Lock()
-		defer client.Unlock()
-
-		if client != player {
-			clients = append(clients, client)
-		}
-	}
-
-	s.Clients = clients
-}
-
 // PlayerHasLobby - This function is used to determine whether or not a player
 // is in a lobby.
 func (s *Server) PlayerHasLobby(player *Player) bool {
@@ -253,19 +200,6 @@ func (s *Server) FindLobbyByPlayer(player *Player) (*Lobby, error) {
 	}
 
 	return &Lobby{}, errors.New("no lobby found")
-}
-
-func (s *Server) FindPlayerByID(id string) (*Player, error) {
-	for _, player := range s.Clients {
-		player.Lock()
-		defer player.Unlock()
-
-		if player.ID == id {
-			return player, nil
-		}
-	}
-
-	return &Player{}, errors.New("no such player found")
 }
 
 func (s *Server) SendErrorPacket(client net.Conn, message string) error {
