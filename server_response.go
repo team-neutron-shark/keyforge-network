@@ -63,24 +63,24 @@ func (s *Server) HandleLoginRequest(client net.Conn, packet LoginRequestPacket) 
 	player.ID = packet.ID
 	player.Client = client
 
-	s.AddPlayer(player)
+	Players().AddPlayer(player)
 	return nil
 }
 
 func (s *Server) HandleExitRequest(client net.Conn, packet ExitPacket) error {
-	player, e := s.FindPlayerByConnection(client)
+	player, e := Players().FindPlayerByConnection(client)
 
 	if e != nil {
 		return e
 	}
 
 	s.CloseConnection(player.Client)
-	s.RemovePlayer(player)
+	Players().RemovePlayer(player)
 	return nil
 }
 
 func (s *Server) HandleCreateLobbyRequest(client net.Conn, packet CreateLobbyRequestPacket) error {
-	player, e := s.FindPlayerByConnection(client)
+	player, e := Players().FindPlayerByConnection(client)
 
 	if e != nil {
 		if s.Debug {
@@ -104,7 +104,7 @@ func (s *Server) HandleCreateLobbyRequest(client net.Conn, packet CreateLobbyReq
 }
 
 func (s *Server) HandlePlayerListRequest(client net.Conn, packet PlayerListRequestPacket) error {
-	player, e := s.FindPlayerByConnection(client)
+	player, e := Players().FindPlayerByConnection(client)
 
 	if e != nil {
 		if s.Debug {
@@ -119,7 +119,7 @@ func (s *Server) HandlePlayerListRequest(client net.Conn, packet PlayerListReque
 
 	playerList := PlayerList{}
 
-	for _, p := range s.Clients {
+	for _, p := range Players().GetPlayers() {
 		entry := PlayerListEntry{}
 		entry.ID = p.ID
 		entry.Name = p.Name
@@ -141,7 +141,7 @@ func (s *Server) HandlePlayerListRequest(client net.Conn, packet PlayerListReque
 }
 
 func (s *Server) HandleLobbyChatRequest(client net.Conn, packet LobbyChatRequestPacket) error {
-	player, e := s.FindPlayerByConnection(client)
+	player, e := Players().FindPlayerByConnection(client)
 
 	if e != nil {
 		return e
@@ -164,7 +164,7 @@ func (s *Server) HandleLobbyChatRequest(client net.Conn, packet LobbyChatRequest
 }
 
 func (s *Server) HandleGlobalChatRequest(client net.Conn, packet GlobalChatRequestPacket) error {
-	player, e := s.FindPlayerByConnection(client)
+	player, e := Players().FindPlayerByConnection(client)
 
 	if e != nil {
 		return e
@@ -174,7 +174,7 @@ func (s *Server) HandleGlobalChatRequest(client net.Conn, packet GlobalChatReque
 	playerName := player.Name
 	player.Unlock()
 
-	for _, p := range s.Clients {
+	for _, p := range Players().GetPlayers() {
 		p.Lock()
 		defer p.Unlock()
 		s.SendGlobalChatResponse(p, playerName, packet.Message)
@@ -188,7 +188,7 @@ func (s *Server) HandleGlobalChatRequest(client net.Conn, packet GlobalChatReque
 func (s *Server) HandleLobbyListRequest(client net.Conn, packet LobbyListRequestPacket) error {
 	lobbyList := LobbyList{}
 
-	player, e := s.FindPlayerByConnection(client)
+	player, e := Players().FindPlayerByConnection(client)
 
 	if e != nil {
 		return e
@@ -209,7 +209,7 @@ func (s *Server) HandleLobbyListRequest(client net.Conn, packet LobbyListRequest
 }
 
 func (s *Server) HandleJoinLobbyRequest(client net.Conn, packet JoinLobbyRequestPacket) error {
-	player, e := s.FindPlayerByConnection(client)
+	player, e := Players().FindPlayerByConnection(client)
 
 	if e != nil {
 		return e
@@ -247,7 +247,7 @@ func (s *Server) HandleJoinLobbyRequest(client net.Conn, packet JoinLobbyRequest
 }
 
 func (s *Server) HandleLeaveLobbyRequest(client net.Conn, packet LeaveLobbyRequestPacket) error {
-	player, e := s.FindPlayerByConnection(client)
+	player, e := Players().FindPlayerByConnection(client)
 
 	if e != nil {
 		return e
@@ -287,13 +287,13 @@ func (s *Server) HandleLeaveLobbyRequest(client net.Conn, packet LeaveLobbyReque
 }
 
 func (s *Server) HandleLobbyKickRequest(client net.Conn, packet LobbyKickRequestPacket) error {
-	player, e := s.FindPlayerByConnection(client)
+	player, e := Players().FindPlayerByConnection(client)
 
 	if e != nil {
 		return e
 	}
 
-	targetPlayer, e := s.FindPlayerByID(packet.Target)
+	targetPlayer, e := Players().FindPlayerByID(packet.Target)
 
 	if e != nil {
 		return e
