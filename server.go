@@ -36,6 +36,7 @@ func NewServer(address string) *Server {
 
 	// Add Observers
 	server.AddObserver(Logger())
+	server.AddObserver(Events())
 
 	// Start the listen loop on the specified address
 	go server.ListenLoop(address)
@@ -61,15 +62,15 @@ func (s *Server) RemoveObserver(observer Observer) {
 
 	for _, o := range s.observers {
 		if o != observer {
-			observers = append(observers)
+			observers = append(observers, o)
 		}
 	}
 
 	s.observers = observers
 }
 
-// Notify - Notifies observers that a network event has occured.
-func (s *Server) Notify(event Event) {
+// NotifyObservers - Notifies observers that a network event has occured.
+func (s *Server) NotifyObservers(event Event) {
 	for _, observer := range s.observers {
 		observer.Notify(event)
 	}
@@ -163,7 +164,7 @@ func (s *Server) ReadLoop(client net.Conn) {
 		event := NetworkEvent{}
 		event.connection = &client
 		event.packet = &packet
-		s.Notify(event)
+		s.NotifyObservers(event)
 
 		s.HandlePacket(client, packet)
 	}

@@ -35,7 +35,6 @@ func (s *Server) HandleVersionRequest(client net.Conn, packet VersionPacket) err
 	if packet.Version != ProtocolVersion {
 		logEntry := fmt.Sprintf("Client %s sent a version packet with a mismatching version.", client.RemoteAddr())
 		Logger().Error(logEntry)
-
 		s.SendErrorPacket(client, "Protocol version mismatch.")
 		s.CloseConnection(client)
 		return errors.New("protocol version mismatch")
