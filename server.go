@@ -1,7 +1,6 @@
 package kfnetwork
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"sync"
@@ -9,13 +8,11 @@ import (
 
 // Server - This type represent our server at a high level
 type Server struct {
-	Clients       []*Player
 	ClientMutex   sync.Mutex
 	CardManager   *CardManager
 	Debug         bool
 	Listener      net.Listener
 	ListenerMutex sync.Mutex
-	Lobbies       []*Lobby
 	LogQueue      chan string
 	observers     []Observer
 	PacketQueue   chan Packet
@@ -178,28 +175,6 @@ func (s *Server) CloseConnection(client net.Conn) {
 		Logger().Log(logMessage)
 	}
 	client.Close()
-}
-
-// PlayerHasLobby - This function is used to determine whether or not a player
-// is in a lobby.
-func (s *Server) PlayerHasLobby(player *Player) bool {
-	for _, lobby := range s.Lobbies {
-		if lobby.PlayerExists(player) {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (s *Server) FindLobbyByPlayer(player *Player) (*Lobby, error) {
-	for _, lobby := range s.Lobbies {
-		if lobby.PlayerExists(player) {
-			return lobby, nil
-		}
-	}
-
-	return &Lobby{}, errors.New("no lobby found")
 }
 
 func (s *Server) SendErrorPacket(client net.Conn, message string) error {

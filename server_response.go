@@ -253,7 +253,7 @@ func (s *Server) HandleLeaveLobbyRequest(client net.Conn, packet LeaveLobbyReque
 		return e
 	}
 
-	if !s.PlayerHasLobby(player) {
+	if !Players().PlayerHasLobby(player) {
 		return errors.New("player is not in a lobby")
 	}
 
