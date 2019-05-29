@@ -49,6 +49,7 @@ func (e *EventManager) NotifyObservers(event Event) {
 func (e *EventManager) Notify(event Event) {
 	switch event.(type) {
 	case NetworkEvent:
-		Logger().Log("EventManager: network event received.")
+		Logger().Log("eventmanager: network event received")
+		e.NotifyObservers(event)
 	}
 }

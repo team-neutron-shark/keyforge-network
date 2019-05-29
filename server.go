@@ -35,7 +35,6 @@ func NewServer(address string) *Server {
 	}
 
 	// Add Observers
-	server.AddObserver(Logger())
 	server.AddObserver(Events())
 
 	// Start the listen loop on the specified address
@@ -161,11 +160,7 @@ func (s *Server) ReadLoop(client net.Conn) {
 			return
 		}
 
-		event := NetworkEvent{}
-		event.connection = &client
-		event.packet = &packet
-		s.NotifyObservers(event)
-
+		s.NotifyObservers(NetworkEvent{connection: &client, packet: &packet})
 		s.HandlePacket(client, packet)
 	}
 }
