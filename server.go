@@ -68,8 +68,8 @@ func (s *Server) RemoveObserver(observer Observer) {
 	s.observers = observers
 }
 
-// Notify - Notifies observers that a network event has occured.
-func (s *Server) Notify(event Event) {
+// NotifyObservers - Notifies observers that a network event has occured.
+func (s *Server) NotifyObservers(event Event) {
 	for _, observer := range s.observers {
 		observer.Notify(event)
 	}
@@ -163,7 +163,7 @@ func (s *Server) ReadLoop(client net.Conn) {
 		event := NetworkEvent{}
 		event.connection = &client
 		event.packet = &packet
-		s.Notify(event)
+		s.NotifyObservers(event)
 
 		s.HandlePacket(client, packet)
 	}

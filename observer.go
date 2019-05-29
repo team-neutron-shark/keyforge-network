@@ -9,7 +9,7 @@ type Observer interface {
 type Subject interface {
 	AddObserver(Observer)
 	RemoveObserver(Observer)
-	Notify(Event)
+	NotifyObservers(Event)
 }
 
 type Event interface {
