@@ -88,6 +88,18 @@ func (p *PlayerManager) FindPlayerByConnection(connection net.Conn) (*Player, er
 	return &Player{}, errors.New("could not find any players with the given connection")
 }
 
+// PlayerHasLobby - This function is used to determine whether or not a player
+// is in a lobby.
+func (p *PlayerManager) PlayerHasLobby(player *Player) bool {
+	for _, lobby := range Lobbies().GetLobbies() {
+		if lobby.PlayerExists(player) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (p *PlayerManager) GetPlayers() []*Player {
 	return p.players
 }
